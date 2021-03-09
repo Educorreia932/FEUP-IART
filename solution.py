@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from copy import deepcopy
 
 from cell import Cell
 from board import Board
@@ -15,10 +16,48 @@ class Problem():
         self.budget = budget
 
         self.board = Board(height, width, grid)
-        self.state = State(backbone, self.board)
+        self.current_state = State(backbone, self.board)
+        self.current_score = self.calc_score(self.current_state)
 
     def __str__(self):
         return self.board.__str__()
+
+    # Correct?
+    def generate_new_states(self):
+
+        for cell in self.current_state.get_backboned_cells():
+            new_state = deepcopy(self.current_state)
+            new_state.place_router(cell, self.radius)
+            yield new_state
+
+        for cell in self.current_state.get_backboned_cells():
+            new_state = deepcopy(self.current_state)
+            new_state.place_backbone(cell)
+            yield new_state
+
+    def normal_hillclimb(self):
+        neighbour_states = self.generate_new_states()
+
+        while True:
+            neighbour = next(neighbour_states)
+            neighbour_score = self.calc_score(neighbour)
+            if neighbour_score <= self.current_score:
+                return self.current_state
+
+            self.current_state = neighbour
+            self.current_score = neighbour_score
+            neighbour_states = self.generate_new_states()
+
+    def hillclimb_steepest_ascent(self):
+
+        while True:
+            neighbour = max(self.generate_new_states(), key=self.calc_score)
+            neighbour_score = self.calc_score(neighbour)
+            if neighbour_score <= self.current_score:
+                return self.current_state
+
+            self.current_state = neighbour
+            self.current_score = neighbour_score
 
     def calc_score(self, state):
         return 1000 * state.get_covered_targets_amount() + (self.budget - (state.get_placed_backbones_amount() * self.price_backbone) + state.get_placed_routers_amount() * self.price_router)
@@ -62,6 +101,7 @@ def image(data):
 if __name__ == "__main__":
     p = read_file("input/example.in")
 
-    print(p)
-    print(p.calc_score(p.state))
+    # result = p.normal_hillclimb()
+    result = p.hillclimb_steepest_ascent()
+    print(result)
     # plot(p)
