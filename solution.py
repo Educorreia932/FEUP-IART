@@ -4,59 +4,24 @@ from PIL import Image
 
 from cell import Cell
 from board import Board
+from state import State
+
 
 class Problem():
     def __init__(self, height, width, radius, price_backbone, price_router, budget, backbone, grid):
-        self.board = Board(height, width, grid)
-
         self.radius = radius
         self.price_backbone = price_backbone
         self.price_router = price_router
         self.budget = budget
 
+        self.board = Board(height, width, grid)
+        self.state = State(backbone, self.board)
+
     def __str__(self):
-        result = ""
-        for line in self.grid:
-            for elem in line:
-                result += Cell.to_character(elem) + " "
-            result += "\n"
+        return self.board.__str__()
 
-        return result
-
-    # ineficiente
-    def router_can_see(self, r_coords, target):
-        top = min(target[0], r_coords[0])
-        bottom = max(target[0], r_coords[0])
-
-        left = min(target[1], r_coords[1])
-        right = max(target[1], r_coords[1])
-
-        for i in range(top, bottom + 1):
-            for j in range(left, right + 1):
-                if self.grid[i][j] == Cell.WALL:
-                    return False
-
-        return True
-
-    def place_router(self, coords):
-        self.grid[coords[0]][coords[1]] = Cell.ROUTER
-
-        for i in range(coords[0] - self.radius, coords[0] + self.radius + 1):
-            for j in range(coords[1] - self.radius, coords[1] + self.radius + 1):
-                if self.router_can_see(coords, [i, j]) and coords != [i, j]:
-                    if self.grid[i][j] == Cell.TARGET:
-                        self.target_covered += 1 
-                    self.grid[i][j] = Cell.CONNECTED_ROUTER
-
-    def place_backbone(self, coords):
-        self.grid[coords[0]][coords[1]] = Cell.BACKBONE
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                if 0 <= i < self.height and 0 <= j < self.width and i != j and self.grid[coords[0]][coords[1]] != Cell.WALL:
-                    self.connected_cells.append([coords[0] + i, coords[1] + j])
-
-    def score(self):
-        return 1000 * self.target_covered + (self.budget - (len(self.placed_backbones) * self.price_backbone) + len(self.placed_routers) * self.price_router)
+    def calc_score(self, state):
+        return 1000 * state.get_covered_targets_amount() + (self.budget - (state.get_placed_backbones_amount() * self.price_backbone) + state.get_placed_routers_amount() * self.price_router)
 
 
 def read_file(filename):
@@ -73,7 +38,7 @@ def read_file(filename):
             for j in range(W):
                 grid[i, j] = Cell.from_character(lines[i + 3][j])
 
-        return Problem(H, W, R, Pb, Pr, B, [br, bc], np.array(grid))
+        return Problem(H, W, R, Pb, Pr, B, (br, bc), grid)
 
 
 def plot(data):
@@ -97,7 +62,6 @@ def image(data):
 if __name__ == "__main__":
     p = read_file("input/example.in")
 
-    p.place_router([5, 5])
     print(p)
-    print(p.score())
+    print(p.calc_score(p.state))
     # plot(p)

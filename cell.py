@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class Cell(IntEnum):
     BACKBONE = -2
     VOID = -1
