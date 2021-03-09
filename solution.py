@@ -67,13 +67,11 @@ def read_file(filename):
         Pb, Pr, B = [int(x) for x in lines[1].split()]
         br, bc = [int(x) for x in lines[2].split()]
 
-        grid = []
+        grid = np.zeros((H, W), dtype=np.int8)
 
-        for i in range(3, H + 3):
-            aux = []
+        for i in range(H):
             for j in range(W):
-                aux.append(Cell.from_character(lines[i][j]))
-            grid.append(aux)
+                grid[i, j] = Cell.from_character(lines[i + 3][j])
 
         return Problem(H, W, R, Pb, Pr, B, [br, bc], np.array(grid))
 
