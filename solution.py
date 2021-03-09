@@ -2,65 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from enum import IntEnum
-
-
-class Cell(IntEnum):
-    BACKBONE = -2
-    VOID = -1
-    WALL = 0
-    TARGET = 1
-    ROUTER = 2
-    CONNECTED_ROUTER = 3  # Places where the router reaches
-    CABLE = 4
-
-    @classmethod
-    def from_character(cls, character):
-        cell_characters = {
-            "-": Cell.VOID,
-            "#": Cell.WALL,
-            ".": Cell.TARGET
-        }
-
-        if character in cell_characters.keys():
-            return cell_characters[character]
-
-        raise ValueError(f"{character} is not a valid cell character.")
-
-    @classmethod
-    def to_character(cls, cell):
-        cell_characters = {
-            Cell.VOID: "-",
-            Cell.WALL: "#",
-            Cell.TARGET: ".",
-            Cell.ROUTER: "r",
-            Cell.BACKBONE: "b",
-            Cell.CONNECTED_ROUTER: "c"
-        }
-
-        return cell_characters[cell]
-
+from cell import Cell
+from board import Board
 
 class Problem():
     def __init__(self, height, width, radius, price_backbone, price_router, budget, backbone, grid):
-        self.height = height
-        self.width = width
+        self.board = Board(height, width, grid)
+
         self.radius = radius
         self.price_backbone = price_backbone
         self.price_router = price_router
         self.budget = budget
-        self.backbone = backbone
-        self.grid = grid
-        self.target_covered = 0
-        self.placed_routers = []
-        self.placed_backbones = [backbone]
-        self.connected_cells = []
-        #Checkar bordas
-        for i in [-1, 0, 1]:
-            for j in [-1, 0, 1]:
-                if i != j and self.grid[self.backbone[0]][self.backbone[1]] != Cell.WALL:
-                    self.connected_cells.append(
-                        [self.backbone[0] + i, self.backbone[1] + j])
 
     def __str__(self):
         result = ""
@@ -123,7 +75,7 @@ def read_file(filename):
                 aux.append(Cell.from_character(lines[i][j]))
             grid.append(aux)
 
-        return Problem(H, W, R, Pb, Pr, B, [br, bc], grid)
+        return Problem(H, W, R, Pb, Pr, B, [br, bc], np.array(grid))
 
 
 def plot(data):
@@ -150,4 +102,4 @@ if __name__ == "__main__":
     p.place_router([5, 5])
     print(p)
     print(p.score())
-    plot(p)
+    # plot(p)
