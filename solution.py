@@ -1,6 +1,8 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 from enum import IntEnum
+
 
 class Cell(IntEnum):
     BACKBONE = -2
@@ -24,6 +26,7 @@ class Cell(IntEnum):
 
         raise ValueError(f"{character} is not a valid cell character.")
 
+
 def read_file(filename):
     with open(filename) as file:
         lines = file.read().split("\n")
@@ -38,6 +41,30 @@ def read_file(filename):
             for j in range(W):
                 grid[i, j] = Cell.from_character(lines[i][j])
 
+        return {
+            "height": H,
+            "width": W,
+            "radius": R,
+            "price_backbone": Pb,
+            "price_router": Pr,
+            "budget": B,
+            "backbone": [br, bc],
+            "grid": grid
+        }
+
+
+def plot(data):
+    figure = plt.figure()
+    axes = plt.Axes(figure, (0, 0, 1, 1))
+
+    figure.add_axes(axes)
+
+    axes.imshow(data["grid"])
+
+    plt.show()
+
 
 if __name__ == "__main__":
-    read_file("input/example.in")
+    data = read_file("input/opera.in")
+
+    plot(data)
