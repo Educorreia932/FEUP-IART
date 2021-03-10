@@ -9,7 +9,7 @@ from cell import Cell
 from grid import Grid
 from state import State
 
-
+# TODO: Move to a file of its own
 class Problem:
     def __init__(self, H, W, R, Pb, Pr, budget, backbone, cells):
         self.R = R
@@ -36,7 +36,7 @@ class Problem:
             new_state.place_backbone(cell)
             yield new_state
 
-    def normal_hillclimb(self):
+    def normal_hillclimb(self) -> State:
         neighbour_states = self.generate_new_states()
 
         while True:
@@ -69,7 +69,7 @@ class Problem:
         return 1000 * l + (self.B - N * self.Pb + M * self.Pr)
 
 
-def read_file(filename):
+def read_file(filename) -> Problem:
     with open(filename) as file:
         lines = file.read().split("\n")
 
@@ -94,10 +94,10 @@ def plot(data):
 
     figure.add_axes(axes)
 
-    axes.imshow(data.grid.cells)
+    axes.imshow(data.grid.cells, vmin=-2, vmax=4)
+    axes.imshow(data.wireless_coverage(), cmap=plt.cm.gray, alpha=0.2)
 
     plt.show()
-
 
 def image(data):
     newimage = Image.fromarray(data.cells)
@@ -108,12 +108,16 @@ def image(data):
 if __name__ == "__main__":
     start = time.time()
 
-    p = read_file("input/charleston_road.in")
+    p: Problem = read_file("../input/opera.in")
 
-    result = p.normal_hillclimb()
+    result: State = p.normal_hillclimb()
     # result = p.hillclimb_steepest_ascent()
 
-    plot(result)
+    # print(result.grid.generate_neighbours((3, 5)))
+    # result.grid.cells[5, 3] = Cell.TARGET
+
 
     end = time.time()
     print(f"Elapsed time of execution is {end - start} seconds")
+
+    plot(result)

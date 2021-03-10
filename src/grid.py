@@ -17,11 +17,11 @@ class Grid:
 
         return [
             (coords[0] + i, coords[1] + j) for i in [-1, 0, 1]
-            for j in [-1, 0, 1] if
-            0 <= i + coords[0] < self.h and
-            0 <= j + coords[1] < self.w and
-            i + coords[0] != j + coords[1] and
-            self.cells[i + coords[0]][j + coords[1]] != Cell.WALL
+                for j in [-1, 0, 1] if
+                    0 <= i + coords[0] < self.h and
+                    0 <= j + coords[1] < self.w and
+                    i + coords[0] != j + coords[1] and
+                    self.cells[i + coords[0]][j + coords[1]] != Cell.WALL
         ]
 
     def router_can_see(self, r_coords, target):

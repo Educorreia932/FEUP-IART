@@ -28,12 +28,7 @@ The selected problem was *[Router Placement](https://storage.googleapis.com/codi
 
 The selected programming language for the project development was Python.
 
-
 ## TODO
-
-* Provavelmente separar Problema em Grid e Node da solução para nao replicar board
-
-* Retirei numpy nao sei se precisaremos
 
 * Codigo bastante mau overall é preciso dar refactor
 

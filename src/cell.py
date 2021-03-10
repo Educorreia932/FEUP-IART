@@ -7,7 +7,7 @@ class Cell(IntEnum):
     WALL = 0
     TARGET = 1
     ROUTER = 2
-    CONNECTED_ROUTER = 3  # Places where the router reaches
+    CONNECTED_ROUTER = 3 
     CABLE = 4
 
     @classmethod

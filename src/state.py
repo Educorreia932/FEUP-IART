@@ -1,7 +1,8 @@
+from numpy.lib.function_base import cov
 from cell import Cell
+import numpy as np
 
-
-class State():
+class State:
     def __init__(self, starter_backbone, grid):
         self.grid = grid
 
@@ -11,8 +12,7 @@ class State():
         self.backboned_cells = set()
         self.placed_backbones.add(starter_backbone)
 
-        self.backboned_cells.update(
-            self.grid.generate_neighbours(starter_backbone))
+        self.backboned_cells.update(self.grid.generate_neighbours(starter_backbone))
 
     def place_router(self, coords, radius):
         self.placed_routers.add(coords)
@@ -38,6 +38,22 @@ class State():
     def get_backboned_cells(self):
         return self.backboned_cells
 
+    def update(self):
+        pass
+
+    def wireless_coverage(self):
+        result = np.zeros(self.grid.cells.shape, dtype=bool)
+        
+        for router in self.placed_routers:
+            i = router[0]
+            j = router[1]
+            radius = 7 # TODO: Hardcoded for the moment
+
+            coverage = self.grid.cells[i - radius:i + radius, j - radius:j + radius] != Cell.WALL 
+            result[i - radius:i + radius, j - radius:j + radius] |= coverage
+
+        return result
+            
     def __str__(self):
         result = ""
 
@@ -51,6 +67,7 @@ class State():
 
                 elif (i, j) in self.covered_targets:
                     result += "c "
+
                 else:
                     result += Cell.to_character(self.grid.get_cell((i, j))) + " "
 
