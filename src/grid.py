@@ -17,7 +17,7 @@ class Grid:
 
         return [
             (coords[0] + i, coords[1] + j) for i in [-1, 0, 1]
-                for j in [-1, 0, 1] if
+            for j in [-1, 0, 1] if
             0 <= i + coords[0] < self.H and
             0 <= j + coords[1] < self.W and
             i + coords[0] != j + coords[1] and
@@ -33,7 +33,7 @@ class Grid:
         left = min(target[1], r_coords[1])
         right = max(target[1], r_coords[1])
 
-        return np.any(self.cells[top:bottom + 1, left:right + 1] == Cell.WALL)
+        return np.all(self.cells[top:bottom + 1, left:right + 1] != Cell.WALL)
 
     def __str__(self):
         result = ""

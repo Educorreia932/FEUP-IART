@@ -23,7 +23,6 @@ The selected problem was *[Router Placement](https://storage.googleapis.com/codi
 **Operators:** 
 
 - Place router
-- Place cable
 
 **Heuristics/Avaliation functions:**
 

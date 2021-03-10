@@ -35,8 +35,10 @@ def plot(data):
 
     figure.add_axes(axes)
 
+    coverage = data.wireless_coverage()
+
     axes.imshow(data.grid.cells, vmin=-2, vmax=4)
-    axes.imshow(data.wireless_coverage(), cmap=plt.cm.gray, alpha=0.2)
+    axes.imshow(coverage, cmap=plt.cm.gray, alpha=0.2)
 
     plt.show()
 
@@ -44,18 +46,20 @@ def plot(data):
 def image(data):
     newimage = Image.fromarray(data.cells)
 
-    newimage.save("example.png")  # takes type from filename extension
+    newimage.save("example.png")  # Takes type from filename extension
 
 
 if __name__ == "__main__":
     start = time.time()
 
-    p: Problem = read_file("../input/example.in")
+    p: Problem = read_file("../input/charleston_road.in")
 
-    # result: State = p.normal_hillclimb()
-    result: State = p.hillclimb_steepest_ascent()
+    result: State = p.normal_hillclimb()
+    # result: State = p.hillclimb_steepest_ascent()
 
     end = time.time()
-    print(f"Elapsed time of execution is {end - start} seconds")
+
+    print(f"This solution is worth {p.score(result)} points.")
+    print(f"Elapsed time of execution is {end - start} seconds.")
 
     plot(result)

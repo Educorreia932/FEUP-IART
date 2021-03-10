@@ -1,8 +1,8 @@
 from copy import deepcopy
 
-from src.cell import Cell
-from src.grid import Grid
-from src.state import State
+from cell import Cell
+from grid import Grid
+from state import State
 
 
 class Problem:
@@ -31,26 +31,22 @@ class Problem:
                     yield new_state
 
     def normal_hillclimb(self) -> State:
-        neighbour_states = self.generate_new_states()
-
         while True:
-            neighbour = next(neighbour_states)
-            neighbour_score = self.score(neighbour)
+            for state in self.generate_new_states():
+                neighbour = state
+                neighbour_score = self.score(neighbour)
 
-            if neighbour_score <= self.current_score:
+                if neighbour_score > self.current_score:
+                    break
+
+            else:
                 return self.current_state
 
             self.current_state = neighbour
             self.current_score = neighbour_score
-            neighbour_states = self.generate_new_states()
 
     def hillclimb_steepest_ascent(self) -> State:
-        counter = 0
-
         while True:
-            print(counter)
-            counter += 1
-
             neighbour = max(self.generate_new_states(), key=self.score)
             neighbour_score = self.score(neighbour)
 
@@ -61,8 +57,8 @@ class Problem:
             self.current_score = neighbour_score
 
     def score(self, state) -> int:
-        l = state.get_covered_targets_amount()
-        N = state.get_placed_backbones_amount()
+        t = state.get_covered_targets_amount()
+        N = state.get_placed_cables_amount()
         M = state.get_placed_routers_amount()
 
-        return 1000 * l + (self.B - N * self.Pb + M * self.Pr)
+        return 1000 * t + (self.B - (N * self.Pb + M * self.Pr))
