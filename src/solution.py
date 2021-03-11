@@ -52,7 +52,12 @@ def image(data):
 if __name__ == "__main__":
     start = time.time()
 
-    p: Problem = read_file("../input/charleston_road.in")
+    p: Problem = read_file("../input/opera.in")
+
+    print(f"Budget: {p.B}")
+    print(f"Price per router: {p.Pr}")
+    print(f"Number of uncovered targets: {p.current_state.get_uncovered_targets_amount()}")
+    print()
 
     result: State = p.normal_hillclimb()
     # result: State = p.hillclimb_steepest_ascent()
@@ -60,6 +65,11 @@ if __name__ == "__main__":
     end = time.time()
 
     print(f"This solution is worth {p.score(result)} points.")
+    print()
+    print(f"Number of covered targets: {result.get_covered_targets_amount()}")
+    print(f"Number of uncovered targets: {result.get_uncovered_targets_amount()}")
+    print(f"Number of placed routers: {result.get_placed_routers_amount()}")
+    print()
     print(f"Elapsed time of execution is {end - start} seconds.")
 
     plot(result)

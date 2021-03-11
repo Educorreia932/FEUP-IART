@@ -1,10 +1,13 @@
-from cell import Cell
 import numpy as np
+
+from cell import Cell
 
 
 class State:
     def __init__(self, starter_backbone, grid):
         self.grid = grid
+
+        self.uncovered_targets = set(tuple(coords) for coords in np.argwhere(grid.cells == Cell.TARGET))
 
         self.placed_routers = set()
         self.covered_targets = set()
@@ -12,6 +15,7 @@ class State:
         self.backboned_cells = set()
         self.placed_cables.add(starter_backbone)
         self.backboned_cells.update(self.grid.generate_neighbours(starter_backbone))
+
 
     def place_router(self, coords, radius):
         self.placed_routers.add(coords)
@@ -21,10 +25,15 @@ class State:
         left = max(0, coords[1] - radius)
         right = min(self.grid.W, coords[1] + radius + 1)
 
+        self.uncovered_targets.remove(coords)
+
         for i in range(top, bottom):
             for j in range(left, right):
                 if self.grid.router_can_see(coords, (i, j)) and self.grid.get_cell((i, j)) != Cell.VOID:
                     self.covered_targets.add((i, j))
+
+                    if (i, j) in self.uncovered_targets:
+                        self.uncovered_targets.remove((i, j))
 
     def place_cell(self, coords):
         self.placed_cables.add(coords)
@@ -38,6 +47,9 @@ class State:
 
     def get_covered_targets_amount(self):
         return len(self.covered_targets)
+
+    def get_uncovered_targets_amount(self):
+        return len(self.uncovered_targets)
 
     def get_backboned_cells(self):
         return self.backboned_cells
