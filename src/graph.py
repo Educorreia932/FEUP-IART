@@ -8,16 +8,16 @@ class Vertex():
         return self.coords
 
     def __repr__(self) -> str:
-        return self.coords.__repr__() + "->" + self.path.get_coords().__repr__()
+        return "Vertex: " + self.coords.__repr__()
 
 
 class Graph():
     def __init__(self, vertices):
-        self.vertices = vertices  # vertices
+        self.vertices = [Vertex(coords) for coords in vertices]
         self.edges = []
 
-        for v1 in vertices:
-            for v2 in vertices:
+        for v1 in self.vertices:
+            for v2 in self.vertices:
                 self.add_edge(v1, v2, self.weight(v1, v2))
 
     def add_edge(self, u, v, w):
@@ -73,19 +73,5 @@ class Graph():
 
         return result
 
-
-if __name__ == "__main__":
-
-    v = [
-        Vertex((1, 0)),
-        Vertex((1, 2)),
-        Vertex((4, 2)),
-        Vertex((2, 6)),
-        Vertex((1, 9)),
-        Vertex((5, 6))
-    ]
-
-    g = Graph(v)
-    g.kruskal()
-
-    print(g.vertices)
+    def get_mst_distance(self):
+        return sum([self.weight(v, v.path) for v in self.vertices if v != v.path])

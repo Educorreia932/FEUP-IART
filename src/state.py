@@ -1,6 +1,7 @@
 import numpy as np
 
 from cell import Cell
+from graph import Graph
 
 
 class State:
@@ -13,7 +14,8 @@ class State:
         self.covered_targets = set()
         self.placed_cables = set()
         self.backboned_cells = set()
-        self.placed_cables.add(starter_backbone)
+        # self.placed_cables.add(starter_backbone)
+        self.cable_amount = 1
         self.backboned_cells.update(self.grid.generate_neighbours(starter_backbone))
 
 
@@ -35,12 +37,17 @@ class State:
                     if (i, j) in self.uncovered_targets:
                         self.uncovered_targets.remove((i, j))
 
+        g = Graph(self.placed_routers)
+        g.kruskal()
+        self.cable_amount += g.get_mst_distance()
+
+
     def place_cell(self, coords):
         self.placed_cables.add(coords)
         self.backboned_cells.update(self.grid.generate_neighbours(coords))
 
     def get_placed_cables_amount(self):
-        return len(self.placed_cables)
+        return self.cable_amount
 
     def get_placed_routers_amount(self):
         return len(self.placed_routers)
