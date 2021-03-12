@@ -1,0 +1,5 @@
+# Reads the output of python -m cProfile -o stats .\solution.py
+
+import pstats
+p = pstats.Stats('stats')
+p.sort_stats('cumulative').print_stats(10)

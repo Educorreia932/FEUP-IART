@@ -9,8 +9,15 @@ class Grid:
         self.W = W
         self.cells = cells
 
+        self.target_cells = set(tuple(coords)
+                                for coords in np.argwhere(self.cells == Cell.TARGET))
+        self.target_amount = len(self.target_cells)
+
     def get_cell(self, coords):
         return self.cells[coords[0], coords[1]]
+
+    def get_target_amount(self):
+        return self.target_amount
 
     def generate_neighbours(self, coords):
         """Generates neighbours of coords"""

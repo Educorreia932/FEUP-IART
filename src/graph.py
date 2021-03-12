@@ -27,7 +27,7 @@ class Graph():
     def find(self, u):
         """Find set of an element i (uses path compression technique)"""
         while u != u.path:
-           u = u.path
+            u = u.path
         return u
 
     def union(self, u, v):
@@ -46,6 +46,7 @@ class Graph():
             if a.dist == b.dist:
                 b.dist += 1
 
+    # based on the implementation of the UC CAL
     def kruskal(self):
         for v in self.vertices:
             v.dist = 0

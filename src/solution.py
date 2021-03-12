@@ -52,7 +52,8 @@ def image(data):
 if __name__ == "__main__":
     start = time.time()
 
-    p: Problem = read_file("../input/charleston_road.in")
+    # p: Problem = read_file("../input/example.in")
+    p: Problem = read_file("../input/example.in")
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")

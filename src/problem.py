@@ -1,7 +1,5 @@
 import random
 
-from copy import deepcopy
-
 from cell import Cell
 from grid import Grid
 from state import State
@@ -28,7 +26,7 @@ class Problem:
         for _ in range(n):
             coords = random.choice(tuple(self.current_state.uncovered_targets))
 
-            new_state = deepcopy(self.current_state)
+            new_state = State(None, None, self.current_state)
             new_state.place_router(coords, self.R)
 
             yield new_state
