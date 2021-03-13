@@ -35,9 +35,11 @@ def plot(data):
 
     figure.add_axes(axes)
 
+    backbone = data.backbone()
     coverage = data.wireless_coverage()
 
     axes.imshow(data.grid.cells, vmin=-2, vmax=4)
+    # axes.imshow(backbone, cmap=plt.cm.gray, alpha=0.7)
     axes.imshow(coverage, cmap=plt.cm.gray, alpha=0.2)
 
     plt.show()
@@ -53,7 +55,9 @@ if __name__ == "__main__":
     start = time.time()
 
     # p: Problem = read_file("../input/example.in")
-    p: Problem = read_file("../input/example.in")
+    p: Problem = read_file("../input/charleston_road.in")
+    # p: Problem = read_file("../input/rue_de_londres.in")
+
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")
@@ -62,6 +66,7 @@ if __name__ == "__main__":
 
     result: State = p.normal_hillclimb()
     # result: State = p.hillclimb_steepest_ascent()
+    # result: State = p.simulated_annealing(2)
 
     end = time.time()
 

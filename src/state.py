@@ -23,7 +23,8 @@ class State:
             self.uncovered_targets = parent_state.uncovered_targets.copy()
             self.placed_routers = parent_state.placed_routers.copy()
             self.placed_cables = parent_state.placed_cables.copy()
-            self.cable_amount = parent_state.cable_amount
+            # Must be 1 because we are summing mst amount
+            self.cable_amount = 1
 
     def place_router(self, coords, radius):
         self.placed_routers.add(coords)
@@ -37,7 +38,7 @@ class State:
 
         for i in range(top, bottom):
             for j in range(left, right):
-                if self.grid.router_can_see(coords, (i, j)) and self.grid.get_cell((i, j)) != Cell.VOID:
+                if self.grid.get_cell((i, j)) != Cell.VOID and self.grid.router_can_see(coords, (i, j)):
                     # self.covered_targets.add((i, j))
 
                     if (i, j) in self.uncovered_targets:
@@ -85,6 +86,82 @@ class State:
             j = cable[1]
 
             self.grid.cells[i, j] = Cell.CABLE
+
+        return result
+
+    def backbone(self):
+
+        result = np.zeros(self.grid.cells.shape, dtype=bool)
+
+        g = Graph(self.placed_routers)
+        g.kruskal()
+        self.cable_amount = g.get_mst_distance()
+
+        for router in g.vertices:
+
+            start = router.get_coords()
+            target = router.path.get_coords()
+
+            if start[0] == target[0]:
+                for j in range(start[1], target[1]):
+                    if j != start[1]:
+                        # result[start[0], j] = Cell.CABLE
+                        self.placed_cables.add((start[0], j))
+            elif start[1] == target[1]:
+                for i in range(start[0], target[0]):
+                    if i != start[0]:
+                        # result[i, start[1]] = Cell.CABLE
+                        self.placed_cables.add((i, start[1]))
+            else:
+                if (target[0] - start[0]) < 0:
+                    xdiff = -1
+                elif (target[0] - start[0]) > 0:
+                    xdiff = 1
+                else:
+                    xdiff = 0
+
+                if (target[1] - start[1]) < 0:
+                    ydiff = -1
+                elif (target[1] - start[1]) > 0:
+                    ydiff = 1
+                else:
+                    ydiff = 0
+
+                delta = (xdiff, ydiff)
+
+                current_cell = (start[0], start[1])
+                while current_cell[0] != target[0] and current_cell[1] != target[1]:
+
+                    current_cell = (
+                        current_cell[0] + delta[0], current_cell[1] + delta[1])
+                    print(current_cell,  "     ", target)
+                    if current_cell == target:
+                        break
+                    else:
+                        # result[current_cell[0], current_cell[1]] = Cell.CABLE
+                        self.placed_cables.add(current_cell)
+
+                if current_cell != target:
+                    
+                    if current_cell[0] == target[0]:
+
+                        start = min((current_cell[1], target[1]))
+                        end = max((current_cell[1], target[1]))
+
+                        for j in range(start, end):
+                            if j != start:
+                                # result[current_cell[0], j] = Cell.CABLE
+                                self.placed_cables.add((current_cell[0], j))
+
+                    if current_cell[1] == target[1]:
+
+                        start = min((current_cell[0], target[0]))
+                        end = max((current_cell[0], target[0]))
+
+                        for i in range(start, end):
+                            if i != start:
+                                # result[i, current_cell[1]] = Cell.CABLE
+                                self.placed_cables.add((i, current_cell[1]))
 
         return result
 
