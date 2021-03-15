@@ -1,14 +1,14 @@
 class Vertex():
     def __init__(self, coords):
         self.coords = coords
-        self.dist = None
-        self.path = None
+        self.dist = 0
+        self.path = self
 
     def get_coords(self):
         return self.coords
 
     def __repr__(self) -> str:
-        return "Vertex: " + self.coords.__repr__()
+        return "Vertex: " + self.coords.__repr__() + "->" + self.path.coords.__str__()
 
 
 class Graph():
@@ -16,16 +16,28 @@ class Graph():
         self.vertices = [Vertex(coords) for coords in vertices]
         self.edges = []
 
-        for v1 in self.vertices:
-            for v2 in self.vertices:
+        for i in range(len(self.vertices) - 1):
+            for j in range(i+1, len(self.vertices)):
+                v1 = self.vertices[i]
+                v2 = self.vertices[j]
+
                 self.add_edge(v1, v2, self.weight(v1, v2))
+
+        # for v1 in self.vertices:
+        #     for v2 in self.vertices:
+        #         self.add_edge(v1, v2, self.weight(v1, v2))
 
     def add_edge(self, u, v, w):
         """Add an edge to graph"""
         self.edges.append([u, v, w])
 
+    def add_vertex(self, coords):
+        v = Vertex(coords)
+        self.vertices.append(v)
+        for v1 in self.vertices:
+            self.add_edge(v1, v, self.weight(v, v1))
+
     def find(self, u):
-        """Find set of an element i (uses path compression technique)"""
         while u != u.path:
             u = u.path
         return u
@@ -48,9 +60,9 @@ class Graph():
 
     # based on the implementation of the UC CAL
     def kruskal(self):
-        for v in self.vertices:
-            v.dist = 0
-            v.path = v
+        # for v in self.vertices:
+        #     v.dist = 0
+        #     v.path = v
 
         self.edges.sort(key=lambda e: e[2])
 
@@ -76,3 +88,18 @@ class Graph():
 
     def get_mst_distance(self):
         return sum([self.weight(v, v.path) for v in self.vertices if v != v.path])
+
+
+if __name__ == "__main__":
+    v = [
+        (1, 0),
+        (1, 2),
+        (4, 2),
+        (2, 6),
+        (5, 6)
+    ]
+
+    g = Graph(v)
+    g.kruskal()
+
+    print(g.vertices)

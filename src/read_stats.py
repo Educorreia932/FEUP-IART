@@ -2,4 +2,4 @@
 
 import pstats
 p = pstats.Stats('stats')
-p.sort_stats('tottime').print_stats(10)
+p.sort_stats('tottime').print_stats(20)

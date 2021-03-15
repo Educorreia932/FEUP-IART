@@ -15,6 +15,7 @@ class Problem:
         self.B = budget
 
         self.grid = Grid(H, W, cells)
+        self.current_iteration = 0
         self.current_state = State(backbone, self.grid)
         self.current_score = self.score(self.current_state)
 
@@ -52,6 +53,8 @@ class Problem:
     def hillclimb_steepest_ascent(self) -> State:
         while True:
             neighbour_states = list(self.generate_new_states())
+            self.current_iteration += 1
+            print("Current iteration: " + self.current_iteration)
 
             if len(neighbour_states) == 0:
                 return self.current_state

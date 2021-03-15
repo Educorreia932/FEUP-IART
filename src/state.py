@@ -9,6 +9,7 @@ class State:
 
         if parent_state == None:
             self.grid = grid
+            self.starter_backbone = starter_backbone
             self.uncovered_targets = set(
                 tuple(coords) for coords in np.argwhere(grid.cells == Cell.TARGET))
             self.placed_routers = set()
@@ -23,6 +24,7 @@ class State:
             self.uncovered_targets = parent_state.uncovered_targets.copy()
             self.placed_routers = parent_state.placed_routers.copy()
             self.placed_cables = parent_state.placed_cables.copy()
+            self.starter_backbone = parent_state.starter_backbone
             # Must be 1 because we are summing mst amount
             self.cable_amount = 1
 
@@ -45,6 +47,7 @@ class State:
                         self.uncovered_targets.remove((i, j))
 
         g = Graph(self.placed_routers)
+        g.add_vertex(self.starter_backbone)
         g.kruskal()
         self.cable_amount += g.get_mst_distance()
 
@@ -134,7 +137,7 @@ class State:
 
                     current_cell = (
                         current_cell[0] + delta[0], current_cell[1] + delta[1])
-                    print(current_cell,  "     ", target)
+                    # print(current_cell,  "     ", target)
                     if current_cell == target:
                         break
                     else:
