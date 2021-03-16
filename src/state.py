@@ -9,9 +9,11 @@ class State:
         if parent_state == None:
             self.grid = grid
             self.starter_backbone = starter_backbone
-            self.uncovered_targets = set(tuple(coords) for coords in np.argwhere(grid.cells == Cell.TARGET))
+            self.uncovered_targets = set(
+                tuple(coords) for coords in np.argwhere(grid.cells == Cell.TARGET))
             self.placed_routers = {starter_backbone}
             self.placed_cables = set()
+            self.graph = None
             self.cable_amount = 1
 
         else:
@@ -20,6 +22,7 @@ class State:
             self.placed_routers = parent_state.placed_routers.copy()
             self.placed_cables = parent_state.placed_cables.copy()
             self.starter_backbone = parent_state.starter_backbone
+            self.graph = parent_state.graph
 
             # Must be 1 because we are summing MST amount
             self.cable_amount = 1
@@ -40,15 +43,18 @@ class State:
                     if (i, j) in self.uncovered_targets:
                         self.uncovered_targets.remove((i, j))
 
-        g = Graph(self.placed_routers)
-        g.kruskal()
+        if self.graph == None:
+            self.graph = Graph(self.placed_routers)
+            
+        else:
+            self.graph = Graph([coords], self.graph)
 
-        self.cable_amount += g.get_mst_distance()
+        self.graph.kruskal()
 
+        self.cable_amount += self.graph.get_mst_distance()
 
     def place_cell(self, coords):
         self.placed_cables.add(coords)
-        # self.backboned_cells.update(self.grid.generate_neighbours(coords))
 
     def get_placed_cables_amount(self):
         return self.cable_amount
@@ -92,7 +98,7 @@ class State:
 
         g = Graph(self.placed_routers)
         g.kruskal()
-        
+
         self.cable_amount = g.get_mst_distance()
 
         for router in g.result:
@@ -136,7 +142,7 @@ class State:
                 delta = (xdiff, ydiff)
 
                 current_cell = (start[0], start[1])
-                
+
                 while current_cell[0] != target[0] and current_cell[1] != target[1]:
                     current_cell = (
                         current_cell[0] + delta[0], current_cell[1] + delta[1])

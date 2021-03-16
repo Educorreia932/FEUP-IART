@@ -2,5 +2,5 @@
 
 import pstats
 
-p = pstats.Stats('stats')
+p = pstats.Stats('out/stats')
 p.sort_stats('tottime').print_stats(20)

@@ -54,7 +54,7 @@ class Problem:
         while True:
             neighbour_states = list(self.generate_new_states())
             self.current_iteration += 1
-            print("Current iteration: " + self.current_iteration)
+            print("Current iteration: " + str(self.current_iteration))
 
             if len(neighbour_states) == 0:
                 return self.current_state

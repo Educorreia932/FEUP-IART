@@ -1,17 +1,36 @@
 class Graph:
-    def __init__(self, vertices):
-        self.V = len(vertices)
-        self.vertices = list(vertices)
-        self.graph = []
+    def __init__(self, new_vertices, parent_graph=None):
+        if parent_graph == None:
+            self.V = len(new_vertices)
+            self.vertices = list(new_vertices)
+            self.graph = []
 
-        for i in range(self.V - 1):
-            for j in range(i + 1, self.V):
-                u = self.vertices[i]
-                v = self.vertices[j]
+            for i in range(self.V - 1):
+                for j in range(i + 1, self.V):
+                    u = self.vertices[i]
+                    v = self.vertices[j]
 
-                w = self.weight(u, v)
+                    w = self.weight(u, v)
 
-                self.add_edge(i, j, w)
+                    self.add_edge(i, j, w)
+
+        else:
+            self.vertices = parent_graph.vertices.copy()
+            self.graph = parent_graph.graph.copy()
+
+            # Case for more than one new vertex
+            for i in range(len(self.vertices), len(self.vertices) + len(new_vertices)):
+                for j in range(len(self.vertices)):
+                    u = new_vertices[i - len(self.vertices)]
+                    v = self.vertices[j]
+
+                    w = self.weight(u, v)
+
+                    self.add_edge(i, j, w)
+
+            self.vertices.extend(new_vertices)
+            self.V = len(self.vertices)
+
 
     def add_edge(self, u, v, w):
         self.graph.append([u, v, w])
@@ -57,12 +76,12 @@ class Graph:
 
         while e < self.V - 1:
             u, v, w = self.graph[i]
-            i = i + 1
+            i += 1
             x = self.find(parent, u)
             y = self.find(parent, v)
 
             if x != y:
-                e = e + 1
+                e += 1
                 self.result.append([u, v, w])
                 self.apply_union(parent, rank, x, y)
 
