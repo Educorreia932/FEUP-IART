@@ -8,6 +8,8 @@ from cell import Cell
 from state import State
 from problem import Problem
 
+from os import getcwd
+
 
 def read_file(filename) -> Problem:
     with open(filename) as file:
@@ -46,10 +48,10 @@ def plot(data):
 if __name__ == "__main__":
     start = time.time()
 
-    # p: Problem = read_file("input/example.in")
-    p: Problem = read_file("input/charleston_road.in")
+    # p: Problem = read_file("/input/example.in")
+    # p: Problem = read_file("input/charleston_road.in")
     # p: Problem = read_file("input/rue_de_londres.in")
-    # p: Problem = read_file("input/opera.in")
+    p: Problem = read_file("input/opera.in")
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")

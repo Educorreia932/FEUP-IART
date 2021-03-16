@@ -45,7 +45,7 @@ class State:
 
         if self.graph == None:
             self.graph = Graph(self.placed_routers)
-            
+
         else:
             self.graph = Graph([coords], self.graph)
 
@@ -67,9 +67,6 @@ class State:
 
     def get_uncovered_targets_amount(self):
         return len(self.uncovered_targets)
-
-    # def get_backboned_cells(self):
-    #     return self.backboned_cells
 
     def wireless_coverage(self):
         """Returns an array with wireless coverage and updates cells"""
@@ -140,7 +137,6 @@ class State:
                     ydiff = 0
 
                 delta = (xdiff, ydiff)
-
                 current_cell = (start[0], start[1])
 
                 while current_cell[0] != target[0] and current_cell[1] != target[1]:

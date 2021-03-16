@@ -12,28 +12,31 @@ class Graph:
 
                     w = self.weight(u, v)
 
-                    self.add_edge(i, j, w)
+                    self.graph.append([i, j, w])
+
+            self.graph = sorted(self.graph, key=lambda item: item[2])
 
         else:
             self.vertices = parent_graph.vertices.copy()
             self.graph = parent_graph.graph.copy()
 
             # Case for more than one new vertex
-            for i in range(len(self.vertices), len(self.vertices) + len(new_vertices)):
+            for i in range(len(new_vertices)):
                 for j in range(len(self.vertices)):
-                    u = new_vertices[i - len(self.vertices)]
+                    u = new_vertices[i]
                     v = self.vertices[j]
 
                     w = self.weight(u, v)
 
-                    self.add_edge(i, j, w)
+                    self.add_edge(parent_graph.V + i, j, w)
 
             self.vertices.extend(new_vertices)
             self.V = len(self.vertices)
 
-
     def add_edge(self, u, v, w):
-        self.graph.append([u, v, w])
+
+        i = binary_search(self.graph, w, 0, len(self.graph) - 1)
+        self.graph.insert(i, [u, v, w])
 
     # Search function
 
@@ -65,7 +68,7 @@ class Graph:
 
     def kruskal(self):
         i, e = 0, 0
-        self.graph = sorted(self.graph, key=lambda item: item[2])
+        # self.graph = sorted(self.graph, key=lambda item: item[2])
         self.result = []
         parent = []
         rank = []
@@ -87,3 +90,32 @@ class Graph:
 
     def get_mst_distance(self):
         return sum([e[2] for e in self.result])
+
+
+def binary_search(arr, val, start, end):
+    # we need to distinugish whether we 
+    # should insert before or after the 
+    # left boundary. imagine [0] is the last 
+    # step of the binary search and we need 
+    # to decide where to insert -1
+    if start == end:
+        if arr[start][2] > val:
+            return start
+            
+        else:
+            return start+1
+
+    # this occurs if we are moving 
+    # beyond left's boundary meaning 
+    # the left boundary is the least 
+    # position to find a number greater than val
+    if start > end:
+        return start
+
+    mid = (start+end)//2
+    if arr[mid][2] < val:
+        return binary_search(arr, val, mid+1, end)
+    elif arr[mid][2] > val:
+        return binary_search(arr, val, start, mid-1)
+    else:
+        return mid

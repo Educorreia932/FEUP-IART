@@ -36,7 +36,9 @@ class Problem:
             yield new_state
 
     def normal_hillclimb(self) -> State:
-        while True:
+        while self.budget_left(self.current_state) > self.Pr:
+            print(self.current_state.get_uncovered_targets_amount())
+
             for state in self.generate_new_states():
                 neighbour = state
                 neighbour_score = self.score(neighbour)
@@ -50,8 +52,12 @@ class Problem:
             self.current_state = neighbour
             self.current_score = neighbour_score
 
+        return self.current_state
+
     def hillclimb_steepest_ascent(self) -> State:
         while True:
+            print(self.current_state.get_uncovered_targets_amount())
+
             neighbour_states = list(self.generate_new_states())
             self.current_iteration += 1
             print("Current iteration: " + str(self.current_iteration))
@@ -103,12 +109,15 @@ class Problem:
 
     def score(self, state) -> int:
         t = state.get_covered_targets_amount()
-        N = state.get_placed_cables_amount()
-        M = state.get_placed_routers_amount()
-
-        budget = self.B - (N * self.Pb + M * self.Pr)
+        budget = self.budget_left(state)    
 
         if budget < 0:
             return -1
 
-        return 1000 * t + budget
+        return 1000 * t + self.budget_left(state)
+
+    def budget_left(self, state) -> int:
+        N = state.get_placed_cables_amount()
+        M = state.get_placed_routers_amount()
+
+        return self.B - (N * self.Pb + M * self.Pr)
