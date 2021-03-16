@@ -1,105 +1,70 @@
-class Vertex():
-    def __init__(self, coords):
-        self.coords = coords
-        self.dist = 0
-        self.path = self
-
-    def get_coords(self):
-        return self.coords
-
-    def __repr__(self) -> str:
-        return "Vertex: " + self.coords.__repr__() + "->" + self.path.coords.__str__()
-
-
-class Graph():
+class Graph:
     def __init__(self, vertices):
-        self.vertices = [Vertex(coords) for coords in vertices]
-        self.edges = []
+        self.V = len(vertices)
+        self.vertices = list(vertices)
+        self.graph = []
 
-        for i in range(len(self.vertices) - 1):
-            for j in range(i+1, len(self.vertices)):
-                v1 = self.vertices[i]
-                v2 = self.vertices[j]
+        for i in range(self.V - 1):
+            for j in range(i + 1, self.V):
+                u = self.vertices[i]
+                v = self.vertices[j]
 
-                self.add_edge(v1, v2, self.weight(v1, v2))
+                w = self.weight(u, v)
 
-        # for v1 in self.vertices:
-        #     for v2 in self.vertices:
-        #         self.add_edge(v1, v2, self.weight(v1, v2))
+                self.add_edge(i, j, w)
 
     def add_edge(self, u, v, w):
-        """Add an edge to graph"""
-        self.edges.append([u, v, w])
+        self.graph.append([u, v, w])
 
-    def add_vertex(self, coords):
-        v = Vertex(coords)
-        self.vertices.append(v)
-        for v1 in self.vertices:
-            self.add_edge(v1, v, self.weight(v, v1))
+    # Search function
 
-    def find(self, u):
-        while u != u.path:
-            u = u.path
-        return u
+    def find(self, parent, i):
+        if parent[i] == i:
+            return i
 
-    def union(self, u, v):
-        a = self.find(u)
-        b = self.find(v)
+        return self.find(parent, parent[i])
 
-        if a.get_coords() == b.get_coords():
-            return
+    def apply_union(self, parent, rank, x, y):
+        xroot = self.find(parent, x)
+        yroot = self.find(parent, y)
 
-        if a.dist > b.dist:
-            b.path = a
+        if rank[xroot] < rank[yroot]:
+            parent[xroot] = yroot
+
+        elif rank[xroot] > rank[yroot]:
+            parent[yroot] = xroot
 
         else:
-            a.path = b
+            parent[yroot] = xroot
+            rank[xroot] += 1
 
-            if a.dist == b.dist:
-                b.dist += 1
-
-    # based on the implementation of the UC CAL
-    def kruskal(self):
-        # for v in self.vertices:
-        #     v.dist = 0
-        #     v.path = v
-
-        self.edges.sort(key=lambda e: e[2])
-
-        for e in self.edges:
-            u = e[0]
-            v = e[1]
-
-            if self.find(u).get_coords() != self.find(v).get_coords():
-                self.union(u, v)
-
-    def weight(self, u, v):
+    def weight(_, u, v):
         """Taken from https://en.wikipedia.org/wiki/Chebyshev_distance"""
-        return max((abs(v.coords[0] - u.coords[0]), abs(v.coords[1] - u.coords[1]))) - 1
+        return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
 
-    def __str__(self) -> str:
+    #  Applying Kruskal algorithm
 
-        result = ""
+    def kruskal(self):
+        i, e = 0, 0
+        self.graph = sorted(self.graph, key=lambda item: item[2])
+        self.result = []
+        parent = []
+        rank = []
 
-        for _ in self.vertices:
-            result += result.__str__() + "\n"
+        for node in range(self.V):
+            parent.append(node)
+            rank.append(0)
 
-        return result
+        while e < self.V - 1:
+            u, v, w = self.graph[i]
+            i = i + 1
+            x = self.find(parent, u)
+            y = self.find(parent, v)
+
+            if x != y:
+                e = e + 1
+                self.result.append([u, v, w])
+                self.apply_union(parent, rank, x, y)
 
     def get_mst_distance(self):
-        return sum([self.weight(v, v.path) for v in self.vertices if v != v.path])
-
-
-if __name__ == "__main__":
-    v = [
-        (1, 0),
-        (1, 2),
-        (4, 2),
-        (2, 6),
-        (5, 6)
-    ]
-
-    g = Graph(v)
-    g.kruskal()
-
-    print(g.vertices)
+        return sum([e[2] for e in self.result])

@@ -71,6 +71,7 @@ class Problem:
     def simulated_annealing(self, iter_per_temp):
         kmax = 100
         k = 0
+        
         while k < kmax:
             m = 0
             neighbour_states = self.generate_new_states()

@@ -9,7 +9,6 @@ from state import State
 from problem import Problem
 
 
-# TODO: Move to IO file
 def read_file(filename) -> Problem:
     with open(filename) as file:
         lines = file.read().split("\n")
@@ -41,22 +40,16 @@ def plot(data):
     axes.imshow(data.grid.cells, vmin=-2, vmax=4)
     axes.imshow(coverage, cmap=plt.cm.gray, alpha=0.2)
 
-    plt.show()
-
-
-def image(data):
-    newimage = Image.fromarray(data.cells)
-
-    newimage.save("example.png")  # Takes type from filename extension
+    plt.savefig("out/example.png")
 
 
 if __name__ == "__main__":
     start = time.time()
 
     # p: Problem = read_file("../input/example.in")
-    p: Problem = read_file("../input/charleston_road.in")
+    # p: Problem = read_file("input/charleston_road.in")
     # p: Problem = read_file("../input/rue_de_londres.in")
-    # p: Problem = read_file("../input/opera.in")
+    p: Problem = read_file("input/opera.in")
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")
