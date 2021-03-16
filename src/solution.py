@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
     # p: Problem = read_file("/input/example.in")
     # p: Problem = read_file("input/charleston_road.in")
-    p: Problem = read_file("input/rue_de_londres.in")
-    # p: Problem = read_file("input/opera.in")
+    # p: Problem = read_file("input/rue_de_londres.in")
+    p: Problem = read_file("input/opera.in")
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")
@@ -63,9 +63,9 @@ if __name__ == "__main__":
         f"Number of uncovered targets: {p.current_state.get_uncovered_targets_amount()}")
     print()
 
-    result: State = p.normal_hillclimb()
+    # result: State = p.normal_hillclimb()
     # result: State = p.hillclimb_steepest_ascent()
-    # result: State = p.simulated_annealing(2)
+    result: State = p.simulated_annealing(2)
 
     end = time.time()
 

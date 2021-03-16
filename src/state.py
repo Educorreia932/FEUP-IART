@@ -43,7 +43,8 @@ class State:
         left = max(0, coords[1] - radius)
         right = min(self.grid.W, coords[1] + radius + 1)
 
-        self.uncovered_targets.remove(coords)
+        if coords in self.uncovered_targets:
+            self.uncovered_targets.remove(coords)
 
         for i in range(top, bottom):
             for j in range(left, right):

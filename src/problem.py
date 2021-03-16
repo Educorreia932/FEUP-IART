@@ -30,6 +30,7 @@ class Problem:
             i = random.randrange(n)
             coords = uncovered_targets[i]
             uncovered_targets.pop(i)
+            n -= 1
 
             new_state = State(None, None, self.current_state)
             new_state.place_router(coords, self.R)
@@ -56,7 +57,7 @@ class Problem:
         return self.current_state
 
     def hillclimb_steepest_ascent(self) -> State:
-        while True:
+        while self.budget_left(self.current_state) > self.Pr:
             print(self.current_state.get_uncovered_targets_amount())
 
             neighbour_states = list(self.generate_new_states())
@@ -79,14 +80,19 @@ class Problem:
         kmax = 100
         k = 0
         
-        while k < kmax:
+        while k < kmax and self.budget_left(self.current_state) > self.Pr:
             m = 0
             neighbour_states = self.generate_new_states()
 
             while m < iter_per_temp:
-                
-                s = next(neighbour_states)
+                try:
+                    s = next(neighbour_states)
+
+                except StopIteration:
+                    break
+
                 n_score = self.score(s)
+
                 while n_score == -1:
                     s = next(neighbour_states)
                     n_score = self.score(s)
@@ -100,10 +106,14 @@ class Problem:
                     self.current_state = s
                 else:
                     delta = n_score - curr_score
+
                     print("Delta: " + str(delta) + "  Denominator: " + str(((k+1)/kmax))  + "\n")
+                    
                     if random.uniform(0.0, 1.0) < exp(- delta / ((k+1)/kmax)):
                         self.current_state = s
+               
                 m += 1
+            
             k += 1
 
         return self.current_state
