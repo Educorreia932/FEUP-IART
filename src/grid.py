@@ -1,7 +1,14 @@
 import numpy as np
 
-from cell import Cell
-
+cells = {
+    "BACKBONE": -2,
+    "VOID": -1,
+    "WALL": 0,
+    "TARGET": 1,
+    "ROUTER": 2,
+    "CONNECTED_ROUTER": 3,
+    "CABLE": 4
+}
 
 class Grid:
     def __init__(self, H, W, cells):
@@ -9,8 +16,7 @@ class Grid:
         self.W = W
         self.cells = cells
 
-        self.target_cells = set(tuple(coords)
-                                for coords in np.argwhere(self.cells == Cell.TARGET))
+        self.target_cells = set(tuple(coords) for coords in np.argwhere(self.cells == 1))
         self.target_amount = len(self.target_cells)
 
     def get_cell(self, coords):
@@ -28,11 +34,11 @@ class Grid:
             0 <= i + coords[0] < self.H and
             0 <= j + coords[1] < self.W and
             i + coords[0] != j + coords[1] and
-            self.cells[i + coords[0]][j + coords[1]] != Cell.WALL
+            self.cells[i + coords[0]][j + coords[1]] != 0
         ]
 
     def router_can_see(self, r_coords, target):
-        """Returns wheter a route can see a cell or not."""
+        """Returns wheter a route can see a cell or not"""
 
         top = min(target[0], r_coords[0])
         bottom = max(target[0], r_coords[0])
@@ -40,15 +46,5 @@ class Grid:
         left = min(target[1], r_coords[1])
         right = max(target[1], r_coords[1])
 
-        return np.all(self.cells[top:bottom + 1, left:right + 1] != Cell.WALL)
+        return np.all(self.cells[top:bottom + 1, left:right + 1] != 0)
 
-    def __str__(self):
-        result = ""
-
-        for line in self.cells:
-            for elem in line:
-                result += Cell.to_character(elem) + " "
-
-            result += "\n"
-
-        return result

@@ -68,7 +68,6 @@ class Graph:
 
     def kruskal(self):
         i, e = 0, 0
-        # self.graph = sorted(self.graph, key=lambda item: item[2])
         self.result = []
         parent = []
         rank = []
@@ -93,11 +92,8 @@ class Graph:
 
 
 def binary_search(arr, val, start, end):
-    # we need to distinugish whether we 
-    # should insert before or after the 
-    # left boundary. imagine [0] is the last 
-    # step of the binary search and we need 
-    # to decide where to insert -1
+    # We need to distinguish whether we should insert before or after the left boundary. 
+    # Imagine [0] is the last step of the binary search and we need to decide where to insert -1
     if start == end:
         if arr[start][2] > val:
             return start
@@ -105,17 +101,18 @@ def binary_search(arr, val, start, end):
         else:
             return start+1
 
-    # this occurs if we are moving 
-    # beyond left's boundary meaning 
-    # the left boundary is the least 
-    # position to find a number greater than val
+    # This occurs if we are moving beyond left's boundary
+    # Meaning the left boundary is the least  position to find a number greater than val
     if start > end:
         return start
 
-    mid = (start+end)//2
+    mid = (start + end) // 2
+
     if arr[mid][2] < val:
         return binary_search(arr, val, mid+1, end)
+
     elif arr[mid][2] > val:
         return binary_search(arr, val, start, mid-1)
+
     else:
         return mid

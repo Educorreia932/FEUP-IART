@@ -1,7 +1,6 @@
 import random
 from math import exp
 
-from cell import Cell
 from grid import Grid
 from state import State
 from graph import Graph

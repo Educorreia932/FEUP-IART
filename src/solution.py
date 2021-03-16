@@ -2,13 +2,17 @@ import time
 
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
 
-from cell import Cell
 from state import State
 from problem import Problem
 
 from os import getcwd
+
+cells = {
+    "-": -1,
+    "#": 0,
+    ".": 1,
+}
 
 
 def read_file(filename) -> Problem:
@@ -23,7 +27,7 @@ def read_file(filename) -> Problem:
 
         for i in range(H):
             for j in range(W):
-                grid[i, j] = Cell.from_character(lines[i + 3][j])
+                grid[i, j] = cells[lines[i + 3][j]]
 
         return Problem(H, W, R, Pb, Pr, B, (br, bc), grid)
 
@@ -50,12 +54,13 @@ if __name__ == "__main__":
 
     # p: Problem = read_file("/input/example.in")
     # p: Problem = read_file("input/charleston_road.in")
-    # p: Problem = read_file("input/rue_de_londres.in")
-    p: Problem = read_file("input/opera.in")
+    p: Problem = read_file("input/rue_de_londres.in")
+    # p: Problem = read_file("input/opera.in")
 
     print(f"Budget: {p.B}")
     print(f"Price per router: {p.Pr}")
-    print(f"Number of uncovered targets: {p.current_state.get_uncovered_targets_amount()}")
+    print(
+        f"Number of uncovered targets: {p.current_state.get_uncovered_targets_amount()}")
     print()
 
     result: State = p.normal_hillclimb()
@@ -67,7 +72,8 @@ if __name__ == "__main__":
     print(f"This solution is worth {p.score(result)} points.")
     print()
     print(f"Number of covered targets: {result.get_covered_targets_amount()}")
-    print(f"Number of uncovered targets: {result.get_uncovered_targets_amount()}")
+    print(
+        f"Number of uncovered targets: {result.get_uncovered_targets_amount()}")
     print(f"Number of placed routers: {result.get_placed_routers_amount()}")
     print()
     print(f"Elapsed time of execution is {end - start} seconds.")

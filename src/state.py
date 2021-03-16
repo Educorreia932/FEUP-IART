@@ -1,8 +1,16 @@
 import numpy as np
 
-from cell import Cell
 from graph import Graph
 
+cells = {
+    "BACKBONE": -2,
+    "VOID": -1,
+    "WALL": 0,
+    "TARGET": 1,
+    "ROUTER": 2,
+    "CONNECTED_ROUTER": 3,
+    "CABLE": 4
+}
 
 class State:
     def __init__(self, starter_backbone, grid, parent_state=None):
@@ -10,7 +18,7 @@ class State:
             self.grid = grid
             self.starter_backbone = starter_backbone
             self.uncovered_targets = set(
-                tuple(coords) for coords in np.argwhere(grid.cells == Cell.TARGET))
+                tuple(coords) for coords in np.argwhere(grid.cells == cells["TARGET"]))
             self.placed_routers = {starter_backbone}
             self.placed_cables = set()
             self.graph = None
@@ -39,7 +47,7 @@ class State:
 
         for i in range(top, bottom):
             for j in range(left, right):
-                if self.grid.get_cell((i, j)) != Cell.VOID and self.grid.router_can_see(coords, (i, j)):
+                if self.grid.get_cell((i, j)) != cells["VOID"] and self.grid.router_can_see(coords, (i, j)):
                     if (i, j) in self.uncovered_targets:
                         self.uncovered_targets.remove((i, j))
 
@@ -80,13 +88,13 @@ class State:
             i = router[0]
             j = router[1]
 
-            self.grid.cells[i, j] = Cell.ROUTER
+            self.grid.cells[i, j] = cells["ROUTER"]
 
         for cable in self.placed_cables:
             i = cable[0]
             j = cable[1]
 
-            self.grid.cells[i, j] = Cell.CABLE
+            self.grid.cells[i, j] = cells["CABLE"]
 
         return result
 
@@ -107,7 +115,6 @@ class State:
                 e = max((start[1], target[1]))
                 for j in range(s, e):
                     if j != start[1]:
-                        # result[start[0], j] = Cell.CABLE
                         self.placed_cables.add((start[0], j))
 
             elif start[1] == target[1]:
@@ -115,7 +122,6 @@ class State:
                 e = max((start[0], target[0]))
                 for i in range(s, e):
                     if i != start[0]:
-                        # result[i, start[1]] = Cell.CABLE
                         self.placed_cables.add((i, start[1]))
             else:
                 if (target[0] - start[0]) < 0:
@@ -171,24 +177,3 @@ class State:
 
         return result
 
-    def __str__(self):
-        result = ""
-
-        for i in range(self.grid.H):
-            for j in range(self.grid.W):
-                if (i, j) in self.placed_routers:
-                    result += "R "
-
-                elif (i, j) in self.placed_cables:
-                    result += "b "
-
-                elif (i, j) in self.covered_targets:
-                    result += "c "
-
-                else:
-                    result += Cell.to_character(
-                        self.grid.get_cell((i, j))) + " "
-
-            result += "\n"
-
-        return result
