@@ -25,9 +25,11 @@ class Problem:
         n = self.current_state.get_uncovered_targets_amount()
 
         uncovered_targets = list(self.current_state.uncovered_targets)
+
         for _ in range(n):
-            coords = random.choice(uncovered_targets)
-            uncovered_targets.remove(coords)
+            i = random.randrange(n)
+            coords = uncovered_targets[i]
+            uncovered_targets.pop(i)
 
             new_state = State(None, None, self.current_state)
             new_state.place_router(coords, self.R)
