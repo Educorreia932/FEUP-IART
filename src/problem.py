@@ -38,7 +38,7 @@ class Problem:
 
     def normal_hillclimb(self) -> State:
         while self.budget_left(self.current_state) > self.Pr:
-            print(self.current_state.get_uncovered_targets_amount())
+            print("Targets left: ", self.current_state.get_uncovered_targets_amount(), " - Budget: ", self.current_score)
 
             for state in self.generate_new_states():
                 neighbour = state
@@ -75,45 +75,37 @@ class Problem:
             self.current_state = neighbour
             self.current_score = neighbour_score
 
-    def simulated_annealing(self, iter_per_temp):
-        kmax = 100
-        k = 0
+    def simulated_annealing(self):
+        T = 100000
         
-        while k < kmax and self.budget_left(self.current_state) > self.Pr:
-            m = 0
+        while self.budget_left(self.current_state) > self.Pr:
+            T -= 100
+            if T <= 0:
+                return self.current_state
+
             neighbour_states = self.generate_new_states()
 
-            while m < iter_per_temp:
-                try:
-                    s = next(neighbour_states)
-
-                except StopIteration:
-                    break
-
+            try:
+                s = next(neighbour_states)
                 n_score = self.score(s)
-
                 while n_score == -1:
                     s = next(neighbour_states)
                     n_score = self.score(s)
-
-                curr_score = self.score(self.current_state)
-
-                print(n_score)
-                print(curr_score)
-
-                if n_score >= curr_score:
-                    self.current_state = s
-                else:
-                    delta = n_score - curr_score
-
-                    print("Delta: " + str(delta) + "  Denominator: " + str(((k+1)/kmax))  + "\n")
-                    
-                    if random.uniform(0.0, 1.0) < exp(- delta / ((k+1)/kmax)):
-                        self.current_state = s
-               
-                m += 1
+            except StopIteration:
+                break
             
-            k += 1
+            curr_score = self.score(self.current_state)
+
+            delta = n_score - self.current_score
+
+            if delta > 0:
+                self.current_state = s
+                self.current_score = self.score(self.current_state)
+            else:
+                if random.uniform(0.0, 1.0) < exp(- delta / T):
+                    self.current_state = s
+                    self.current_score = self.score(self.current_state)
+            
 
         return self.current_state
 
