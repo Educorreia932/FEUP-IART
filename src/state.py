@@ -17,8 +17,8 @@ class State:
         if parent_state == None:
             self.grid = grid
             self.starter_backbone = starter_backbone
-            self.uncovered_targets = set(
-                tuple(coords) for coords in np.argwhere(grid.cells == cells["TARGET"]))
+            self.targets = set(tuple(coords) for coords in np.argwhere(grid.cells == cells["TARGET"]))
+            self.uncovered_targets = self.targets.copy()
             self.placed_routers = {starter_backbone}
             self.placed_cables = set()
             self.graph = None
@@ -26,6 +26,7 @@ class State:
 
         else:
             self.grid = parent_state.grid
+            self.targets = parent_state.targets.copy()
             self.uncovered_targets = parent_state.uncovered_targets.copy()
             self.placed_routers = parent_state.placed_routers.copy()
             self.placed_cables = parent_state.placed_cables.copy()
@@ -44,12 +45,14 @@ class State:
         right = min(self.grid.W, coords[1] + radius + 1)
 
         if coords in self.uncovered_targets:
+            self.targets.remove(coords)
             self.uncovered_targets.remove(coords)
 
         for i in range(top, bottom):
             for j in range(left, right):
                 if self.grid.get_cell((i, j)) != cells["VOID"] and self.grid.router_can_see(coords, (i, j)):
                     if (i, j) in self.uncovered_targets:
+                        self.targets.remove((i, j))
                         self.uncovered_targets.remove((i, j))
 
         if self.graph == None:
@@ -73,6 +76,9 @@ class State:
 
     def get_covered_targets_amount(self):
         return self.grid.get_target_amount() - len(self.uncovered_targets)
+
+    def get_targets_amount(self):
+        return len(self.targets)
 
     def get_uncovered_targets_amount(self):
         return len(self.uncovered_targets)
@@ -114,6 +120,7 @@ class State:
             if start[0] == target[0]:
                 s = min((start[1], target[1]))
                 e = max((start[1], target[1]))
+
                 for j in range(s, e):
                     if j != start[1]:
                         self.placed_cables.add((start[0], j))
@@ -149,12 +156,11 @@ class State:
                 while current_cell[0] != target[0] and current_cell[1] != target[1]:
                     current_cell = (
                         current_cell[0] + delta[0], current_cell[1] + delta[1])
-                    # print(current_cell,  "     ", target)
+
                     if current_cell == target:
                         break
 
                     else:
-                        # result[current_cell[0], current_cell[1]] = Cell.CABLE
                         self.placed_cables.add(current_cell)
 
                 if current_cell != target:
@@ -164,7 +170,6 @@ class State:
 
                         for j in range(s, e):
                             if j != s:
-                                # result[current_cell[0], j] = Cell.CABLE
                                 self.placed_cables.add((current_cell[0], j))
 
                     if current_cell[1] == target[1]:
@@ -173,8 +178,8 @@ class State:
 
                         for i in range(s, e):
                             if i != s:
-                                # result[i, current_cell[1]] = Cell.CABLE
                                 self.placed_cables.add((i, current_cell[1]))
 
-        return result
+        self.grid.cells[self.starter_backbone[0]][self.starter_backbone[1]] = cells["BACKBONE"]
 
+        return result

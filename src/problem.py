@@ -22,14 +22,13 @@ class Problem:
         return self.grid.__str__()
 
     def generate_new_states(self):
-        n = self.current_state.get_uncovered_targets_amount()
-
-        uncovered_targets = list(self.current_state.uncovered_targets)
+        n = self.current_state.get_targets_amount()
+        targets = list(self.current_state.targets)
 
         for _ in range(n):
             i = random.randrange(n)
-            coords = uncovered_targets[i]
-            uncovered_targets.pop(i)
+            coords = targets[i]
+            targets.pop(i)
             n -= 1
 
             new_state = State(None, None, self.current_state)
