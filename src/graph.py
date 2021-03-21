@@ -33,6 +33,8 @@ class Graph:
             self.vertices.extend(new_vertices)
             self.V = len(self.vertices)
 
+        #Amount of connections each vertex has on the mst
+        #Used to place backbones on router with more than one connection
         self.childrenAmount = [0]*self.V
 
     def add_edge(self, u, v, w):
@@ -97,20 +99,22 @@ class Graph:
             result += e[2]
             result += 1 if self.childrenAmount[e[0]] > 1 else 0
             result += 1 if self.childrenAmount[e[1]] > 1 else 0
+
+            # Reset number of connections so that we dont put extra backbones
             self.childrenAmount[e[0]] = 0
             self.childrenAmount[e[1]] = 0
 
-        return result - 1 # -1 because of the initial backbone
+        return result - 1  # -1 because of the initial backbone
         # return sum([e[2] for e in self.result])
 
 
 def binary_search(arr, val, start, end):
-    # We need to distinguish whether we should insert before or after the left boundary. 
+    # We need to distinguish whether we should insert before or after the left boundary.
     # Imagine [0] is the last step of the binary search and we need to decide where to insert -1
     if start == end:
         if arr[start][2] > val:
             return start
-            
+
         else:
             return start+1
 

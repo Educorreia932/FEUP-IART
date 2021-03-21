@@ -12,8 +12,8 @@ cells = {
 
 class Grid:
     def __init__(self, H, W, cells):
-        self.H = H
-        self.W = W
+        self.H = H #Height
+        self.W = W #Width
         self.cells = cells
 
         self.target_cells = set(tuple(coords) for coords in np.argwhere(self.cells == 1))
