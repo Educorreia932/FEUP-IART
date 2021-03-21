@@ -110,6 +110,7 @@ class State:
 
         g = Graph(self.placed_routers)
         g.kruskal()
+        print("MST length: ", g.get_mst_distance())
 
         self.cable_amount = g.get_mst_distance()
 

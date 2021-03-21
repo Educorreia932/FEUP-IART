@@ -33,6 +33,8 @@ class Graph:
             self.vertices.extend(new_vertices)
             self.V = len(self.vertices)
 
+        self.childrenAmount = [0]*self.V
+
     def add_edge(self, u, v, w):
 
         i = binary_search(self.graph, w, 0, len(self.graph) - 1)
@@ -85,10 +87,21 @@ class Graph:
             if x != y:
                 e += 1
                 self.result.append([u, v, w])
+                self.childrenAmount[u] += 1
+                self.childrenAmount[v] += 1
                 self.apply_union(parent, rank, x, y)
 
     def get_mst_distance(self):
-        return sum([e[2] for e in self.result])
+        result = 0
+        for e in self.result:
+            result += e[2]
+            result += 1 if self.childrenAmount[e[0]] > 1 else 0
+            result += 1 if self.childrenAmount[e[1]] > 1 else 0
+            self.childrenAmount[e[0]] = 0
+            self.childrenAmount[e[1]] = 0
+
+        return result - 1 # -1 because of the initial backbone
+        # return sum([e[2] for e in self.result])
 
 
 def binary_search(arr, val, start, end):
