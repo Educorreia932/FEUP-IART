@@ -1,3 +1,5 @@
+> # Exercise Sheet 1 
+>
 > ## 1. Problem Formulation and Solution Search 
 > 
 > ### 1.1 Two Buckets Problem 
@@ -24,9 +26,33 @@ operators (their name, preconditions, effects, and cost), and objective test.
 
 > **b)** Solve the problem, by hand, using tree search.
 
-![](1.2%20Two%20Buckets%20Problem/states.png)
+![](1.1.%20Two%20Buckets%20Problem/states.png)
 
 > **c)** Using a programming language of your choice, solve the problem by applying:  
 > 
-> **(c1)** Breadth-first search strategy. 
+> **(c1)** Breadth-first search strategy.  
+> **(c2)** Depth-first search strategy (limited depth).  
+> **(c3)** Iterative deepening strategy.  
 
+[Solution](solve.pl)
+
+> ## 1.2 Missionaries and Cannibals Problem
+>
+> Three missionaries and three cannibals are on one of the banks of the river with a boat that only takes one or two people. The boat cannot travel the river alone.
+> The goal is to find a way to get the six to the other bank of the river without ever leaving more cannibals than missionaries on one of the banks (even at the instant they leave/join the boat) during the process. 
+> 
+> **a)** Formulate this problem as a search problem by defining the state representation, initial state, operators (their name, preconditions, effects, and cost), and objective test.
+
+**States:**  
+**Initial State:**   
+**End State:** 
+**Operators:**   
+**Objective test:** 
+
+> **b)** Solve the problem, by hand, using tree search.
+>
+> **c)** Using a programming language of your choice, solve the problem by applying:
+>
+> **(c1)** Breadth-first search strategy.  
+> **(c2)** Depth-first search strategy (limited depth).  
+> **(c3)** Iterative deepening strategy.   

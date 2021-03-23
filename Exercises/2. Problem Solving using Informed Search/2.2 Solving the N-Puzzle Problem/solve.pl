@@ -1,4 +1,6 @@
-% Breadth-first search
+:- use_module(library(lists)).
+
+% Breadth-first search 
 
 bfs([[E|Path]|_], [E|Path]) :-
     end_state(E).
