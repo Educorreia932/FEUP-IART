@@ -1,8 +1,20 @@
 import random
 
+from numpy.core.numeric import ones
+
 from grid import *
 from solution import *
 
+possible_directions = [
+    (-1, 0),     # N
+    (-1, 1),     # NE
+    (0, 1),      # E
+    (1, 1)       # SE
+    (1, 0),      # S
+    (1, -1),     # SW
+    (0, -1),     # W
+    (-1, -1),    # NW
+]
 
 class Problem:
     def __init__(self, H, W, R, Pb, Pr, B, b, grid) -> None:
@@ -16,70 +28,62 @@ class Problem:
         self.grid = grid    # Building grid cells
         self.solution = Solution()
 
-    def neighbours1(self):
-        """Move a router to an adjacent cell"""
+    def get_neighbour(self, n: int, id: int):
+        """Given an operation ID, returns the corresponding neighbour after performing that operation"""
 
-        possible_directions = [
-            (-1, 0),     # N
-            (-1, 1),     # NE
-            (0, 1),      # E
-            (1, 1)       # SE
-            (1, 0),      # S
-            (1, -1),     # SW
-            (0, -1),     # W
-            (-1, -1),    # NW
-        ]
+        # Move router
+        if id > n - 2:
+            router_index = id // 8
+            direction_index = id % 8
 
-        n = len(self.solution.routers)  # Total number of routers
+            direction = possible_directions[direction_index]
+            router_to_move = self.solution[router_index]
 
-        # Dictionary Key: Each router; Value: List of every direction that router can go
-        permutations = {}
-
-        for _ in range(n * 8):
-            # Select a random router to move
-            i = random.randrange(n)
-
-            # Select the direction in which the router will be moved
-            direction = random.choice(possible_directions)
-
-            # Add the router to the dictionary so that each new state isn´t repeated
-            if i not in permutations:
-                permutations[i] = []
-
-            # Check if a router has already been moved to all adjacent cells
-            while len(permutations[i]) == 8:
-                i = random.randrange(n)
-
-            # Select a new direction, until we find a new one that hasn't been considered yet
-            while direction in permutations[i]:
-                direction = random.choice(possible_directions)
+            new_coords = (router_to_move[router_index][0] + direction[0], router_to_move[router_index][1] + direction[1])
+            #Check if within bounds of map
+            if new_coords[0] < 0 or new_coords >= self.H or new_coords < 0 or new_coords >= self.W:
+                return None
+            
+            #Check if position is valid (not wall and not void)
+            if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
+                return None
 
             neighbour = self.solution.copy()
-            neighbour.routers[i] = (
-                neighbour.routers[i][0] + direction[0], 
-                neighbour.routers[i][1] + direction[1]
-            )
+            neighbour.routers[router_index] = new_coords
 
-            yield neighbour
+            return neighbour
 
-    def neighbours2(self):
-        """Move the cutoff"""
+        # Move cutoff either to the left or to the right
+        else:
+            cutoff_displacement = -1 if (n - id) % 2 == 0 else 1
+            displaced_cutoff = self.solution.cutoff + cutoff_displacement 
 
-        n = len(self.solution.routers)   # Total number of routers
-        i = random.choice([-1, 1])       # Cutoff displacement. Either move it to the left or the right
+            if displaced_cutoff > n or displaced_cutoff < 0:
+                return None
 
-        while self.solution.cutoff + i > n or self.solution.cutoff + i < 0:
-            i = random.choice([-1, 1])
+            neighbour = self.solution.copy()
+            neighbour.cutoff += cutoff_displacement
 
-        neighbour = self.solution.copy()
-        neighbour.cutoff += i
-
-        yield neighbour
+            return neighbour
 
     def neighbours(self):
+        """Generate all possible neighbours of a given state"""
         # TODO: Recalculate spanning tree and covered targets
 
-        pass
+        # Total number of possible neighbours
+        n = len(self.solution.routers) * 8 + 2           
+
+        # Generate a list with IDs corresponding to the different operations permutations we may perform to obtain new neighbours
+        neighbour_ids = list(range(n))                   
+
+        # Shuffle the list so that we obtain a random neighbour each time
+        random.shuffle(neighbour_ids)    
+ 
+        for id in neighbour_ids:
+            neighbour = self.get_neighbour(n, id)
+
+            if neighbour is not None:
+                yield neighbour
 
     def hill_climbing(self):
         pass
