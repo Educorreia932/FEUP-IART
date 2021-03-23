@@ -87,10 +87,11 @@ class Problem:
             neighbour = self.get_neighbour(n, id)
 
             if neighbour is not None:
-                neighbour.calculate_mst()
-                neighbour.calculate_coverage()
+                remaining_budget = (neighbour.cutoff - 1) * self.Pr 
+                if remaining_budget >= 0:
+                    neighbour.calculate_coverage()
 
-                yield neighbour
+                    yield neighbour
 
     def hill_climbing(self):
         self.solution = Solution(self)

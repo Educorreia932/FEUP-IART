@@ -27,7 +27,7 @@ class Solution:
             self.covered_cells = 0              # Number of covered cells by wireless
 
             # Graph representing backbone that connects all routers
-            self.graph = Graph(self.routers)
+            # self.graph = Graph(self.routers)
 
         else:
             self.routers = parent_solution.routers.copy()
@@ -40,15 +40,17 @@ class Solution:
 
         t = self.covered_cells
         B = self.problem.B
-        N = 0  # Number of cables TODO: Change later
+        N = self.calculate_mst_length()  # Number of cables TODO: Change later
         Pb = self.problem.Pb
         M = len(self.routers)
         Pr = self.problem.Pr
 
         return 1000 * t + (B - (N * Pb + M * Pr))
 
-    def calculate_mst(self) -> None:
-        self.graph = Graph(self.routers)
+    def calculate_mst_length(self) -> None:
+        self.graph = Graph(self.routers[:self.cutoff])
+        self.graph.kruskal()
+        return self.graph.get_mst_distance()
 
     def calculate_coverage(self) -> None:
         radius = self.problem.R
