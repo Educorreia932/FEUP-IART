@@ -6,12 +6,8 @@ import matplotlib.pyplot as plt
 from state import State
 from problem import Problem
 
-from os import getcwd
-
 cells = {
-    "-": -1,
-    "#": 0,
-    ".": 1,
+    
 }
 
 
@@ -52,9 +48,9 @@ def plot(data: State):
 if __name__ == "__main__":
     start = time.time()
 
-    # p: Problem = read_file("input/example.in")
+    p: Problem = read_file("input/example.in")
     # p: Problem = read_file("input/charleston_road.in")
-    p: Problem = read_file("input/rue_de_londres.in")
+    # p: Problem = read_file("input/rue_de_londres.in")
     # p: Problem = read_file("input/opera.in")
 
     print(f"Budget: {p.B}")
