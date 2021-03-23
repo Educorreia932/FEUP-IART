@@ -5,7 +5,7 @@ from grid import *
 
 def read_file(filename) -> Problem:
     with open(filename) as file:
-        lines = file.read.split("\n")
+        lines = file.read().split("\n")
 
         H, W, R = [int(x) for x in lines[0].split()]
         Pb, Pr, B = [int(x) for x in lines[1].split()]
@@ -17,4 +17,7 @@ def read_file(filename) -> Problem:
             for j in range(W):
                 cells[i, j] = CELL_TYPE[lines[i + 3][j]]
 
-        return Problem(H, W, R, Pb, Pr, B, (br, bc), Grid(H, W, cells))
+        return Problem(H, W, R, Pb, Pr, B, (br, bc), Grid(cells))
+
+def plot():
+    pass

@@ -1,13 +1,13 @@
 import time
 
-from io import *
-
-from solution import read_file
+from in_out import *
 
 if __name__ == "__main__":
-    problem = read_file("../input/charleston_road.in")
+    problem = read_file("input/charleston_road.in")
     
     start = time.time()
+
+    problem.hill_climbing()
 
     end = time.time()
 
