@@ -1,133 +1,126 @@
 import random
-from math import exp
+import numpy as np
 
-from grid import Grid
-from state import State
-from graph import Graph
+from grid import *
+from solution import *
 
+possible_directions = [
+    (-1, 0),     # N
+    (-1, 1),     # NE
+    (0, 1),      # E
+    (1, 1),      # SE
+    (1, 0),      # S
+    (1, -1),     # SW
+    (0, -1),     # W
+    (-1, -1),    # NW
+]
 
 class Problem:
-    def __init__(self, H, W, R, Pb, Pr, budget, backbone, cells):
-        self.R = R
-        self.Pb = Pb
-        self.Pr = Pr
-        self.B = budget
+    """Class to represent the problem information and solve it using different types of algorithms"""
 
-        self.grid = Grid(H, W, cells)
-        self.current_iteration = 0
-        self.current_state = State(backbone, self.grid)
-        self.current_score = self.score(self.current_state)
+    def __init__(self, H, W, R, Pb, Pr, B, b, grid) -> None:
+        self.H = H            # Number of rows of the grid
+        self.W = W            # Number of columns of the grid
+        self.R = R            # Radius of a router range
+        self.Pb = Pb          # Price of connecting one cell to the backbone
+        self.Pr = Pr          # Price of one wireless router
+        self.B = B            # Maximum budget
+        self.b = b            # Backboard coordinates
+        self.grid = grid      # Building's grid cells
+        self.solution = None
 
-    def __str__(self):
-        return self.grid.__str__()
+    def get_neighbour(self, n: int, id: int) -> Solution:
+        """Given an operation ID, returns the corresponding neighbour after performing that operation"""
 
-    def generate_new_states(self):
-        n = self.current_state.get_targets_amount()
-        targets = list(self.current_state.targets)
+        # Move router
+        if id > n - 2:
+            router_index = id // 8 - 1 
+            direction_index = id % 8
 
-        for _ in range(n):
-            i = random.randrange(n)
-            coords = targets[i]
-            targets.pop(i)
-            n -= 1
+            direction = possible_directions[direction_index]
+            router_to_move = self.solution.routers[router_index]
 
-            new_state = State(None, None, self.current_state)
-            new_state.place_router(coords, self.R)
+            new_coords = (
+                router_to_move[0] + direction[0], 
+                router_to_move[1] + direction[1]
+            )
 
-            yield new_state
+            # Check if it's within bounds of map
+            if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
+                return None
+            
+            # Check if position is valid (not wall and not void)
+            if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
+                return None
 
-    def normal_hillclimb(self) -> State:
-        while self.budget_left(self.current_state) > self.Pr:
-            print(self.current_state.get_uncovered_targets_amount())
+            neighbour = Solution(None, self.solution) 
+            neighbour.routers[router_index] = new_coords
 
-            for state in self.generate_new_states():
-                neighbour = state
-                neighbour_score = self.score(neighbour)
+            return neighbour
 
-                if neighbour_score > self.current_score:
+        # Move cutoff either to the left or to the right
+        else:
+            cutoff_displacement = -1 if (n - id) % 2 == 0 else 1
+            displaced_cutoff = self.solution.cutoff + cutoff_displacement 
+
+            if displaced_cutoff > n or displaced_cutoff < 0:
+                return None
+
+            neighbour = Solution(None, self.solution) 
+            neighbour.cutoff += cutoff_displacement
+
+            return neighbour
+
+    def neighbours(self) -> Solution:
+        """Generate all possible neighbours of a given state"""
+
+        # Total number of possible neighbours
+        n = len(self.solution.routers) * 8 + 2           
+
+        # Generate a list with IDs corresponding to the different operations permutations we may perform to obtain new neighbours
+        neighbour_ids = list(range(n))                   
+
+        # Shuffle the list so that we obtain a random neighbour each time
+        random.shuffle(neighbour_ids)    
+ 
+        for id in neighbour_ids:
+            neighbour = self.get_neighbour(n, id)
+
+            if neighbour is not None:
+                neighbour.calculate_mst()
+                neighbour.calculate_coverage()
+
+                yield neighbour
+
+    def hill_climbing(self):
+        self.solution = Solution(self)
+
+        while True:
+            for neighbour in self.neighbours():
+                if neighbour.evaluate() > self.solution.evaluate():
+                    self.solution = neighbour
+
+                    print("Current score:", self.solution.evaluate())
+
                     break
 
             else:
-                return self.current_state
+                return self.solution
 
-            self.current_state = neighbour
-            self.current_score = neighbour_score
+    def hill_climbing_steepest_ascent(self):
+        best_neighbour = self.solution
 
-        return self.current_state
+        while True:
+            for neighbour in self.neighbours():
+                if neighbour.evaluate() > self.solution.evaluate():
+                    best_neighbour = neighbour
+                    continue
 
-    def hillclimb_steepest_ascent(self) -> State:
-        while self.budget_left(self.current_state) > self.Pr:
-            print(self.current_state.get_uncovered_targets_amount())
+            else:
+                return self.solution
 
-            neighbour_states = list(self.generate_new_states())
-            self.current_iteration += 1
-            print("Current iteration: " + str(self.current_iteration))
+        self.solution = bestneighbour
+        return self.solution
 
-            if len(neighbour_states) == 0:
-                return self.current_state
-
-            neighbour = max(neighbour_states, key=self.score)
-            neighbour_score = self.score(neighbour)
-
-            if neighbour_score <= self.current_score:
-                return self.current_state
-
-            self.current_state = neighbour
-            self.current_score = neighbour_score
-
-    def simulated_annealing(self, iter_per_temp):
-        kmax = 100
-        k = 0
-        
-        while k < kmax and self.budget_left(self.current_state) > self.Pr:
-            m = 0
-            neighbour_states = self.generate_new_states()
-
-            while m < iter_per_temp:
-                try:
-                    s = next(neighbour_states)
-
-                except StopIteration:
-                    break
-
-                n_score = self.score(s)
-
-                while n_score == -1:
-                    s = next(neighbour_states)
-                    n_score = self.score(s)
-
-                curr_score = self.score(self.current_state)
-
-                print(n_score)
-                print(curr_score)
-
-                if n_score >= curr_score:
-                    self.current_state = s
-                else:
-                    delta = n_score - curr_score
-
-                    print("Delta: " + str(delta) + "  Denominator: " + str(((k+1)/kmax))  + "\n")
-                    
-                    if random.uniform(0.0, 1.0) < exp(- delta / ((k+1)/kmax)):
-                        self.current_state = s
-               
-                m += 1
-            
-            k += 1
-
-        return self.current_state
-
-    def score(self, state) -> int:
-        t = state.get_covered_targets_amount()
-        budget = self.budget_left(state)    
-
-        if budget < 0:
-            return -1
-
-        return 1000 * t + self.budget_left(state)
-
-    def budget_left(self, state) -> int:
-        N = state.get_placed_cables_amount()
-        M = state.get_placed_routers_amount()
-
-        return self.B - (N * self.Pb + M * self.Pr)
+    def simmulatead_annealing(self):
+        pass

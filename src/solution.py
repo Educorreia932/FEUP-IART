@@ -1,77 +1,59 @@
-import time
+import random
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from state import State
-from problem import Problem
-
-cells = {
-    
-}
+from grid import *
+from graph import *
 
 
-def read_file(filename) -> Problem:
-    with open(filename) as file:
-        lines = file.read().split("\n")
+class Solution:
+    def __init__(self, problem, parent_solution=None) -> None:
+        if parent_solution == None:
+            self.routers = []
+            self.problem = problem
 
-        H, W, R = [int(x) for x in lines[0].split()]
-        Pb, Pr, B = [int(x) for x in lines[1].split()]
-        br, bc = [int(x) for x in lines[2].split()]
+            # Generate initial solution
 
-        grid = np.zeros((H, W), dtype=np.int8)
+            for _ in range(problem.B // problem.Pr):
+                i = random.randrange(problem.H)
+                j = random.randrange(problem.W)
 
-        for i in range(H):
-            for j in range(W):
-                grid[i, j] = cells[lines[i + 3][j]]
+                while [i, j] in self.routers or problem.grid.cells[i, j] in (CELL_TYPE["#"], CELL_TYPE["-"]):
+                    i = random.randrange(problem.H)
+                    j = random.randrange(problem.W)
 
-        return Problem(H, W, R, Pb, Pr, B, (br, bc), grid)
+                self.routers.append([i, j])
 
+            # Index from which we starting not counting the routers to the final solution
+            self.cutoff = len(self.routers)
+            self.covered_cells = 0              # Number of covered cells by wireless
 
-def plot(data: State):
-    figure = plt.figure()
+            # Graph representing backbone that connects all routers
+            self.graph = Graph(self.routers)
 
-    axes = plt.Axes(figure, (0, 0, 1, 1))
-    axes.axis("off")
+        else:
+            self.routers = parent_solution.routers.copy()
+            self.problem = parent_solution.problem
+            self.cutoff = parent_solution.cutoff
+            self.covered_cells = parent_solution.covered_cells
 
-    figure.add_axes(axes)
+    def evaluate(self) -> int:
+        """Evaluate the current solution using the score function"""
 
-    data.backbone()
-    coverage = data.wireless_coverage()
+        t = self.covered_cells
+        B = self.problem.B
+        N = 0  # Number of cables TODO: Change later
+        Pb = self.problem.Pb
+        M = len(self.routers)
+        Pr = self.problem.Pr
 
-    axes.imshow(data.grid.cells, vmin=-2, vmax=4)
-    axes.imshow(coverage, cmap=plt.cm.gray, alpha=0.2)
+        return 1000 * t + (B - (N * Pb + M * Pr))
 
-    plt.savefig("out/example.png")
-    plt.show()
+    def calculate_mst(self) -> None:
+        self.graph = Graph(self.routers)
 
-if __name__ == "__main__":
-    start = time.time()
+    def calculate_coverage(self) -> None:
+        radius = self.problem.R
+        H = self.problem.H
+        W = self.problem.W
 
-    p: Problem = read_file("input/example.in")
-    # p: Problem = read_file("input/charleston_road.in")
-    # p: Problem = read_file("input/rue_de_londres.in")
-    # p: Problem = read_file("input/opera.in")
-
-    print(f"Budget: {p.B}")
-    print(f"Price per router: {p.Pr}")
-    print(
-        f"Number of uncovered targets: {p.current_state.get_uncovered_targets_amount()}")
-    print()
-
-    result: State = p.normal_hillclimb()
-    # result: State = p.hillclimb_steepest_ascent()
-    # result: State = p.simulated_annealing(2)
-
-    end = time.time()
-
-    print(f"This solution is worth {p.score(result)} points.")
-    print()
-    print(f"Number of covered targets: {result.get_covered_targets_amount()}")
-    print(
-        f"Number of uncovered targets: {result.get_uncovered_targets_amount()}")
-    print(f"Number of placed routers: {result.get_placed_routers_amount()}")
-    print()
-    print(f"Elapsed time of execution is {end - start} seconds.")
-
-    plot(result)
+        for router in self.routers:
+            self.covered_cells += self.problem.grid.router_coverage(router, radius, H, W)
