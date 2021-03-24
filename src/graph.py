@@ -13,8 +13,8 @@ class Graph:
 
                 self.graph.append([i, j, w])
 
-        #Amount of connections each vertex has on the mst
-        #Used to place backbones on router with more than one connection
+        # Amount of connections each vertex has on the MST
+        # Used to place backbones on router with more than one connection
         self.childrenAmount = [0] * self.V
 
 
@@ -39,7 +39,7 @@ class Graph:
             rank[xroot] += 1
 
     def weight(self, u, v):
-        """Taken from https://en.wikipedia.org/wiki/Chebyshev_distance"""
+        """Calculates the Chebyshev distance between two points"""
         return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
 
     def kruskal(self):
@@ -68,6 +68,7 @@ class Graph:
 
     def get_mst_distance(self):
         result = 0
+        
         for e in self.result:
             result += e[2]
             result += 1 if self.childrenAmount[e[0]] > 1 else 0

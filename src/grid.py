@@ -21,22 +21,44 @@ class Grid:
 
         return np.all(self.cells[top:bottom + 1, left:right + 1] != 0)
 
-    def router_coverage(self, coordinates, radius, H, W) -> bool:
-        """Returns the number of cells covered by a router's wireless range"""
+    def router_coverage(self, coordinates) -> bool:
+        """Returns the cells covered by a router's wireless range"""
 
-        covered_cells = 0
+        radius = self.problem.R
+        H = self.problem.H
+        W = self.problem.W
 
-        top = min(coordinates[0] - radius, H)
-        bottom = max(coordinates[0] + radius, H)
+        covered_cells = []
 
-        left = min(coordinates[1] - radius, W)
-        right = max(coordinates[1] + radius, W)
+        top = max(coordinates[0] - radius, 0) # Y position of topmost tile checked for coverage
+        for i in range(coordinates[0], top - 1, -1):
+            if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
+                top = i
+                break
+                
+        bottom = min(coordinates[0] + radius, H - 1) # Y position of bottommost tile checked for coverage
+        for i in range(coordinates[0] + 1, bottom + 1):
+            if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
+                bottom = i
+                break
+
+        left = max(coordinates[1] - radius, 0)
+        for i in range(coordinates[1] - 1, left - 1, -1):
+            if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
+                left = i
+                break
+
+        right = min(coordinates[1] + radius, W - 1)
+        for i in range(coordinates[1] + 1, right + 1):
+            if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
+                right = i
+                break
 
         for i in range(top, bottom):
             for j in range(left, right):
                 target = (i, j)
 
                 if self.router_can_see(coordinates, target):
-                    covered_cells += 1
+                    covered_cells.append(coordinates)
 
         return covered_cells

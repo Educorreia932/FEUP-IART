@@ -27,13 +27,14 @@ class Problem:
         self.B = B            # Maximum budget
         self.b = b            # Backboard coordinates
         self.grid = grid      # Building's grid cells
+        self.grid.problem = self
         self.solution = None
 
     def get_neighbour(self, n: int, id: int) -> Solution:
         """Given an operation ID, returns the corresponding neighbour after performing that operation"""
 
         # Move router
-        if id > n - 2:
+        if id < n - 2:
             router_index = id // 8 - 1 
             direction_index = id % 8
 
@@ -47,16 +48,18 @@ class Problem:
 
             # Check if it's within bounds of map
             if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
-                return None
+                return [None] * 3
             
             # Check if position is valid (not wall and not void)
             if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
-                return None
+                return [None] * 3
 
             neighbour = Solution(None, self.solution) 
             neighbour.routers[router_index] = new_coords
 
-            return neighbour
+            operation = "MOVE"
+
+            return neighbour, operation, (router_to_move, new_coords)
 
         # Move cutoff either to the left or to the right
         else:
@@ -64,12 +67,15 @@ class Problem:
             displaced_cutoff = self.solution.cutoff + cutoff_displacement 
 
             if displaced_cutoff > n or displaced_cutoff < 0:
-                return None
+                return [None] * 3
 
             neighbour = Solution(None, self.solution) 
-            neighbour.cutoff += cutoff_displacement
+            router = neighbour.routers[neighbour.cutoff - 1]
+            neighbour.cutoff = displaced_cutoff
 
-            return neighbour
+            operation = "ADD" if cutoff_displacement == 1 else "REMOVE"
+
+            return neighbour, operation, router
 
     def neighbours(self) -> Solution:
         """Generate all possible neighbours of a given state"""
@@ -84,24 +90,27 @@ class Problem:
         random.shuffle(neighbour_ids)    
  
         for id in neighbour_ids:
-            neighbour = self.get_neighbour(n, id)
+            neighbour, operation, args = self.get_neighbour(n, id)
 
             if neighbour is not None:
-                remaining_budget = (neighbour.cutoff - 1) * self.Pr 
-                if remaining_budget >= 0:
-                    neighbour.calculate_coverage()
-
-                    yield neighbour
+                yield neighbour, operation, args
 
     def hill_climbing(self):
         self.solution = Solution(self)
+        current_score = self.solution.evaluate()
 
         while True:
-            for neighbour in self.neighbours():
-                if neighbour.evaluate() > self.solution.evaluate():
-                    self.solution = neighbour
+            for neighbour, operation, args in self.neighbours():
+                neighbour.calculate_coverage(operation, args)
+                neighbour_score = neighbour.evaluate()
 
-                    print("Current score:", self.solution.evaluate())
+                print("Current score:", neighbour_score)
+
+                if neighbour_score > current_score:
+                    self.solution = neighbour
+                    current_score = neighbour_score
+
+                    print("Current score:", current_score)
 
                     break
 
@@ -119,9 +128,6 @@ class Problem:
 
             else:
                 return self.solution
-
-        self.solution = bestneighbour
-        return self.solution
 
     def simmulatead_annealing(self):
         pass

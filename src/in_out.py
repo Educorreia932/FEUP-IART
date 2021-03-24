@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from problem import *
@@ -19,5 +20,11 @@ def read_file(filename) -> Problem:
 
         return Problem(H, W, R, Pb, Pr, B, (br, bc), Grid(cells))
 
-def plot():
-    pass
+def plot(solution: Solution) -> None:
+    figure = plt.figure()
+
+    axes = plt.Axes(figure, (0, 0, 1, 1))
+    axes.axis("off")
+
+    plt.savefig("out/example.png")
+    plt.show()
