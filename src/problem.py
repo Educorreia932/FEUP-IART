@@ -75,7 +75,7 @@ class Problem:
 
             operation = "ADD" if cutoff_displacement == 1 else "REMOVE"
 
-            return neighbour, operation, router
+            return neighbour, operation, (router)
 
     def neighbours(self) -> Solution:
         """Generate all possible neighbours of a given state"""

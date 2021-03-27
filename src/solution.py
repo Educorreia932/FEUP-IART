@@ -29,6 +29,14 @@ class Solution:
 
             self.calculate_initial_coverage()
 
+            score = self.evaluate()
+
+            while score < 0:
+                removed_router = self.routers[self.cutoff - 1]
+                self.cutoff -= 1
+                self.calculate_coverage_after_operation(removed_router, -1)
+                score = self.evaluate()
+
         else:
             self.routers = parent_solution.routers.copy()
             self.problem = parent_solution.problem
@@ -43,13 +51,17 @@ class Solution:
         B = self.problem.B
         N = self.calculate_mst()  
         Pb = self.problem.Pb
-        M = len(self.routers)
+        M = self.cutoff
         Pr = self.problem.Pr
 
-        remaining_budget = B - (N * Pb + M * Pr)
+        remaining_budget = (B - (N * Pb + M * Pr))
+
+        print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
         if remaining_budget < 0:
             return -1
+
+        print(t, M)
 
         return 1000 * t + remaining_budget
 
@@ -81,12 +93,12 @@ class Solution:
             self.calculate_coverage_after_operation(new_coords, 1)
 
         elif operation == "ADD":
-            router_to_add = args[0]
+            router_to_add = args
 
             self.calculate_coverage_after_operation(router_to_add, 1)
 
         elif operation == "REMOVE":
-            router_to_remove = args[0]
+            router_to_remove = args
 
             self.calculate_coverage_after_operation(router_to_remove, -1)
 
@@ -95,10 +107,12 @@ class Solution:
 
         for cell in router_covered_cells:
             before = self.coverage[cell[0], cell[1]] 
-            after = self.coverage[cell[0], cell[1]] + 1 * operation
+            self.coverage[cell[0], cell[1]] = max(0, before + operation)
+            after = self.coverage[cell[0], cell[1]]
             
-            if after != before and before == 0:
+            if before == 0 and after == 1 and operation == 1:
+                self.covered_cells += 1
+
+            elif after == 0 and before == 1 and operation == -1:
                 self.covered_cells -= 1
 
-            elif after != before and before == 1:
-                self.covered_cells += 1

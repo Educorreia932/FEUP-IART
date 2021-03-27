@@ -9,6 +9,7 @@ CELL_TYPE = {
 class Grid:
     def __init__(self, cells) -> None:
         self.cells = cells
+        print("Target amount:", len(np.argwhere(self.cells == CELL_TYPE["."])))
 
     def router_can_see(self, coordinates, target) -> bool:
         """Returns wheter a route can see a cell or not"""
@@ -31,24 +32,28 @@ class Grid:
         covered_cells = []
 
         top = max(coordinates[0] - radius, 0) # Y position of topmost tile checked for coverage
+
         for i in range(coordinates[0], top - 1, -1):
             if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
                 top = i
                 break
                 
         bottom = min(coordinates[0] + radius, H - 1) # Y position of bottommost tile checked for coverage
+
         for i in range(coordinates[0] + 1, bottom + 1):
             if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
                 bottom = i
                 break
 
         left = max(coordinates[1] - radius, 0)
+
         for i in range(coordinates[1] - 1, left - 1, -1):
             if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
                 left = i
                 break
 
         right = min(coordinates[1] + radius, W - 1)
+
         for i in range(coordinates[1] + 1, right + 1):
             if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
                 right = i
