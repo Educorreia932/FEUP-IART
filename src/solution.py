@@ -56,19 +56,17 @@ class Solution:
 
         remaining_budget = (B - (N * Pb + M * Pr))
 
-        print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+        # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
         if remaining_budget < 0:
             return -1
-
-        print(t, M)
 
         return 1000 * t + remaining_budget
 
     def calculate_mst(self) -> None:
         """Graph representing backbone that connects all routers"""
 
-        self.graph = Graph(self.routers[:self.cutoff])
+        self.graph = Graph(self.routers[:self.cutoff] + [self.problem.b])
         self.graph.kruskal()
 
         return self.graph.get_mst_distance()
@@ -110,9 +108,12 @@ class Solution:
             self.coverage[cell[0], cell[1]] = max(0, before + operation)
             after = self.coverage[cell[0], cell[1]]
             
-            if before == 0 and after == 1 and operation == 1:
+            if before == 0 and after == 1:
                 self.covered_cells += 1
 
-            elif after == 0 and before == 1 and operation == -1:
+            elif before == 1 and after == 0:
                 self.covered_cells -= 1
+
+    def get_placed_routers(self):
+        return self.routers[:self.cutoff]
 

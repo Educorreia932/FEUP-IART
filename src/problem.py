@@ -98,24 +98,28 @@ class Problem:
     def hill_climbing(self):
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
+        i = 100
 
-        while True:
+        while i > 0:
             for neighbour, operation, args in self.neighbours():
                 neighbour.calculate_coverage(operation, args)
                 neighbour_score = neighbour.evaluate()
-
-                print("Current score:", neighbour_score)
 
                 if neighbour_score > current_score:
                     self.solution = neighbour
                     current_score = neighbour_score
 
-                    print("Current score:", current_score)
+                    if i % 10 == 0:
+                        print("Current score:", current_score, "i:", i)
+                    
+                    i -= 1
 
                     break
 
             else:
                 return self.solution
+
+        return self.solution
 
     def hill_climbing_steepest_ascent(self):
         best_neighbour = self.solution
