@@ -8,6 +8,7 @@ CELL_TYPE = {
     "b": 4    # Backbone cell
 }
 
+
 class Grid:
     def __init__(self, cells) -> None:
         self.cells = cells
@@ -24,25 +25,6 @@ class Grid:
 
         return np.all(self.cells[top:bottom + 1, left:right + 1] != CELL_TYPE["#"])
 
-    # def router_coverage(self, coords) -> bool:
-    #     radius = self.problem.R
-    #     H = self.problem.H
-    #     W = self.problem.W
-
-    #     top = max(0, coords[0] - radius)
-    #     bottom = min(H, coords[0] + radius + 1)
-    #     left = max(0, coords[1] - radius)
-    #     right = min(W, coords[1] + radius + 1)
-
-    #     covered_cells = []
-
-    #     for i in range(top, bottom):
-    #         for j in range(left, right):
-    #             if self.cells[i, j] != CELL_TYPE["-"] and self.router_can_see(coords, (i, j)):
-    #                 covered_cells.append((i, j))
-
-    #     return covered_cells
-
     def router_coverage(self, coordinates) -> bool:
         """Returns the cells covered by a router's wireless range"""
 
@@ -52,14 +34,16 @@ class Grid:
 
         covered_cells = []
 
-        top = max(coordinates[0] - radius, 0) # Y position of topmost tile checked for coverage
+        # Y position of topmost tile checked for coverage
+        top = max(coordinates[0] - radius, 0)
 
         for i in range(coordinates[0], top - 1, -1):
             if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
                 top = i
                 break
-                
-        bottom = min(coordinates[0] + radius + 1, H) # Y position of bottommost tile checked for coverage
+
+        # Y position of bottommost tile checked for coverage
+        bottom = min(coordinates[0] + radius + 1, H)
 
         for i in range(coordinates[0] + 1, bottom + 1):
             if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:

@@ -122,16 +122,32 @@ class Problem:
         return self.solution
 
     def hill_climbing_steepest_ascent(self):
-        best_neighbour = self.solution
+        self.solution = Solution(self)
+        current_score = self.solution.evaluate()
+        i = 100
 
-        while True:
-            for neighbour in self.neighbours():
-                if neighbour.evaluate() > self.solution.evaluate():
-                    best_neighbour = neighbour
-                    continue
+        while i > 0:
+            neigbourhood = [(neighbour, operation, args) for (neighbour, operation, args) in self.neighbours()]
+
+            if len(neigbourhood) == 0:
+                return self.solution
+
+            best_neighbour, operation, args = max(neigbourhood, key=lambda s: s[0].evaluate())
+            best_neighbour.calculate_coverage(operation, args)
+            neighbour_score = best_neighbour.evaluate()
+
+            if neighbour_score > current_score:
+                self.solution = best_neighbour
+                current_score = neighbour_score
+
+                print("Current score:", current_score, "i:", i)
+                    
+                i -= 1
 
             else:
                 return self.solution
+
+        return self.solution
 
     def simmulatead_annealing(self):
         pass
