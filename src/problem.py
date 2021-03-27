@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import math
 
 from grid import *
 from solution import *
@@ -66,10 +67,11 @@ class Problem:
             cutoff_displacement = -1 if (n - id) % 2 == 0 else 1
             displaced_cutoff = self.solution.cutoff + cutoff_displacement 
 
-            if displaced_cutoff > n or displaced_cutoff < 0:
+            if displaced_cutoff > len(self.solution.routers) or displaced_cutoff <= 0:
                 return [None] * 3
 
             neighbour = Solution(None, self.solution) 
+            print(len(neighbour.routers), neighbour.cutoff)
             router = neighbour.routers[neighbour.cutoff - 1]
             neighbour.cutoff = displaced_cutoff
 
@@ -150,4 +152,31 @@ class Problem:
         return self.solution
 
     def simmulatead_annealing(self):
-        pass
+        self.solution = Solution(self)
+        current_score = self.solution.evaluate()
+        iteration = 1
+        t = 100000
+
+        neighbours = self.neighbours()
+        for iteration in range(50):
+            neighbour, operation, args = next(neighbours, (None, None, None))
+            if neighbour == None:
+                break
+
+            neighbour.calculate_coverage(operation, args)
+            neighbour_score = neighbour.evaluate()
+
+            delta = current_score - neighbour_score
+            if delta > 0:
+                self.solution = neighbour
+                current_score = neighbour_score
+                neighbours = self.neighbours()
+            else:
+                if math.exp(delta / t) > random.uniform(0, 1): #TODO: -delta/t
+                    self.solution = neighbour
+                    current_score = neighbour_score
+                    neighbours = self.neighbours()
+
+            t *= 0.85 ** iteration 
+
+        return self.solution
