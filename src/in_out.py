@@ -31,7 +31,7 @@ def plot(solution: Solution) -> None:
     cells = backbone(solution)
 
     axes.imshow(cells, vmin=-2, vmax=4)
-    axes.imshow(solution.coverage, cmap=plt.cm.gray, alpha=0.2)
+    axes.imshow(solution.coverage.clip(0,1), cmap=plt.cm.gray, alpha=0.2)
 
     print(f"Covered cells {solution.covered_cells}")
     print(f"Placed routers {len(solution.get_placed_routers())}")

@@ -154,11 +154,11 @@ class Problem:
     def simmulatead_annealing(self):
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
-        iteration = 1
-        t = 100000
 
+        t = 100000
         neighbours = self.neighbours()
-        for iteration in range(50):
+        while t > 0.1:
+            print(f"Current temperature: {t}")
             neighbour, operation, args = next(neighbours, (None, None, None))
             if neighbour == None:
                 break
@@ -167,16 +167,17 @@ class Problem:
             neighbour_score = neighbour.evaluate()
 
             delta = current_score - neighbour_score
-            if delta > 0:
+            # print("Delta: ", delta, "t: ", t)
+            if delta >= 0:
                 self.solution = neighbour
                 current_score = neighbour_score
                 neighbours = self.neighbours()
             else:
-                if math.exp(delta / t) > random.uniform(0, 1): #TODO: -delta/t
+                if math.exp(delta / t) > random.uniform(0, 1):
                     self.solution = neighbour
                     current_score = neighbour_score
                     neighbours = self.neighbours()
 
-            t *= 0.85 ** iteration 
+            t *= 0.95
 
         return self.solution
