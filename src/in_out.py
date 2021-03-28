@@ -6,6 +6,7 @@ from grid import *
 
 def user_input():
     buildings = [
+        "input/example.in",
         "input/charleston_road.in",
         "input/rue_de_londres.in",
         "input/opera.in",
@@ -20,10 +21,11 @@ def user_input():
     ]
 
     print("Select the building:")
-    print("[1] Charleston Road")
-    print("[2] Rue de Londres")
-    print("[3] Opera")
-    print("[4] Let's Go Higher")
+    print("[1] Example")
+    print("[2] Charleston Road")
+    print("[3] Rue de Londres")
+    print("[4] Opera")
+    print("[5] Let's Go Higher")
 
     selected_building = int(input()) - 1
 

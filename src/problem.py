@@ -80,7 +80,7 @@ class Problem:
 
             return neighbour, operation, (router)
 
-    def neighbours(self) -> Solution:
+    def neighbours(self, solution) -> Solution:
         """Generate all possible neighbours of a given state"""
 
         # Total number of possible neighbours
@@ -187,7 +187,7 @@ class Problem:
 
     def genetic_algorithm(self, max_iterations, crossover_function, mutation_function):
         current_iterations = 0
-        current_population = self.generate_initial_solution # populacao inicial
+        current_population = self.generate_initial_solution()
         while current_iterations < max_iterations:
             new_population = []
             for i in range(len(current_population)):
@@ -210,15 +210,37 @@ class Problem:
             min_y_pos = min(min_y_pos, parent1.routers[i][0], parent2.routers[i][0])
             min_y_pos = max(max_y_pos, parent1.routers[i][0], parent2.routers[i][0])
         # Make a random cut between the 2, both included
-        yCut = random.randint(min_y_pos, max_y_pos)
-        child = Solution()
-        
+        y_cut = random.randint(min_y_pos, max_y_pos)
+        child = Solution(None, parent1)
+        child_routers = []
 
 
-        return
+        if(random.randint(1, 2) == 1):
+            for i in range(len(parent1.routers)):
+                if(parent1.routers[i][0] > y_cut):
+                    self.child_routers.append(parent1.routers[i])
+                if(parent2.routers[i][0] < y_cut):
+                    self.child_routers.append(parent2.routers[i])
+        else:
+            for i in range(len(parent1.routers)):
+                if(parent1.routers[i][0] < y_cut):
+                    self.child_routers.append(parent1.routers[i])
+                if(parent2.routers[i][0] > y_cut):
+                    self.child_routers.append(parent2.routers[i])
+        cutoff = 0
+        if(random.randint(1, 2) == 1):
+            cutoff = parent1.cutoff
+        else:
+            cutoff = parent2.cutoff
+        cutoff = min(cutoff, len(child_routers))
+        child.routers = child_routers
+        child.cutoff = cutoff
+        return child
 
     def mutation(self, solution: Solution):
-        pass
+        self.solution = solution
+        return next(self.neighbours())
 
-    def generate_initial_solution(self):
-        pass
+    def generate_initial_solution(self, size):
+        return [Solution(self) for _ in range(size)]
+
