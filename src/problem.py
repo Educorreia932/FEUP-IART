@@ -151,7 +151,7 @@ class Problem:
 
         return self.solution
 
-    def simmulatead_annealing(self):
+    def simulated_annealing(self):
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
 
