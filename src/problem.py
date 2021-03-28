@@ -16,6 +16,7 @@ possible_directions = [
     (-1, -1),    # NW
 ]
 
+
 class Problem:
     """Class to represent the problem information and solve it using different types of algorithms"""
 
@@ -36,26 +37,26 @@ class Problem:
 
         # Move router
         if id < n - 2:
-            router_index = id // 8 - 1 
+            router_index = id // 8 - 1
             direction_index = id % 8
 
             direction = possible_directions[direction_index]
             router_to_move = self.solution.routers[router_index]
 
             new_coords = (
-                router_to_move[0] + direction[0], 
+                router_to_move[0] + direction[0],
                 router_to_move[1] + direction[1]
             )
 
             # Check if it's within bounds of map
             if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
                 return [None] * 3
-            
+
             # Check if position is valid (not wall and not void)
             if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
                 return [None] * 3
 
-            neighbour = Solution(None, self.solution) 
+            neighbour = Solution(None, self.solution)
             neighbour.routers[router_index] = new_coords
 
             operation = "MOVE"
@@ -65,12 +66,12 @@ class Problem:
         # Move cutoff either to the left or to the right
         else:
             cutoff_displacement = -1 if (n - id) % 2 == 0 else 1
-            displaced_cutoff = self.solution.cutoff + cutoff_displacement 
+            displaced_cutoff = self.solution.cutoff + cutoff_displacement
 
             if displaced_cutoff > len(self.solution.routers) or displaced_cutoff <= 0:
                 return [None] * 3
 
-            neighbour = Solution(None, self.solution) 
+            neighbour = Solution(None, self.solution)
             print(len(neighbour.routers), neighbour.cutoff)
             router = neighbour.routers[neighbour.cutoff - 1]
             neighbour.cutoff = displaced_cutoff
@@ -83,21 +84,21 @@ class Problem:
         """Generate all possible neighbours of a given state"""
 
         # Total number of possible neighbours
-        n = len(self.solution.routers) * 8 + 2           
+        n = len(self.solution.routers) * 8 + 2
 
         # Generate a list with IDs corresponding to the different operations permutations we may perform to obtain new neighbours
-        neighbour_ids = list(range(n))                   
+        neighbour_ids = list(range(n))
 
         # Shuffle the list so that we obtain a random neighbour each time
-        random.shuffle(neighbour_ids)    
- 
+        random.shuffle(neighbour_ids)
+
         for id in neighbour_ids:
             neighbour, operation, args = self.get_neighbour(n, id)
 
             if neighbour is not None:
                 yield neighbour, operation, args
 
-    def hill_climbing(self):
+    def hill_climbing(self) -> Solution:
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         i = 100
@@ -113,7 +114,7 @@ class Problem:
 
                     if i % 10 == 0:
                         print("Current score:", current_score, "i:", i)
-                    
+
                     i -= 1
 
                     break
@@ -123,18 +124,20 @@ class Problem:
 
         return self.solution
 
-    def hill_climbing_steepest_ascent(self):
+    def hill_climbing_steepest_ascent(self) -> Solution:
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         i = 100
 
         while i > 0:
-            neigbourhood = [(neighbour, operation, args) for (neighbour, operation, args) in self.neighbours()]
+            neigbourhood = [(neighbour, operation, args)
+                            for (neighbour, operation, args) in self.neighbours()]
 
             if len(neigbourhood) == 0:
                 return self.solution
 
-            best_neighbour, operation, args = max(neigbourhood, key=lambda s: s[0].evaluate())
+            best_neighbour, operation, args = max(
+                neigbourhood, key=lambda s: s[0].evaluate())
             best_neighbour.calculate_coverage(operation, args)
             neighbour_score = best_neighbour.evaluate()
 
@@ -143,7 +146,7 @@ class Problem:
                 current_score = neighbour_score
 
                 print("Current score:", current_score, "i:", i)
-                    
+
                 i -= 1
 
             else:
@@ -151,7 +154,7 @@ class Problem:
 
         return self.solution
 
-    def simulated_annealing(self):
+    def simulated_annealing(self) -> Solution:
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
 
@@ -181,3 +184,41 @@ class Problem:
             t *= 0.95
 
         return self.solution
+
+    def genetic_algorithm(self, max_iterations, crossover_function, mutation_function):
+        current_iterations = 0
+        current_population = self.generate_initial_solution # populacao inicial
+        while current_iterations < max_iterations:
+            new_population = []
+            for i in range(len(current_population)):
+                x = current_population.pop()
+                y = current_population.pop()
+                child = self.crossover(x, y)
+                if random.uniform(0, 1) < 0.2:
+                    child = self.mutation(child)
+                new_population.append(child)
+            current_population = new_population
+            random.shuffle(current_population)
+
+        return max(current_population, key=lambda elem: elem.evaluate())
+
+    def crossover(self, parent1: Solution, parent2: Solution):
+        # Get the y bounds of the router lists in which there are routers in either list
+        min_y_pos = self.H
+        max_y_pos = 0
+        for i in range(len(parent1.routers)):
+            min_y_pos = min(min_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+            min_y_pos = max(max_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+        # Make a random cut between the 2, both included
+        yCut = random.randint(min_y_pos, max_y_pos)
+        child = Solution()
+        
+
+
+        return
+
+    def mutation(self, solution: Solution):
+        pass
+
+    def generate_initial_solution(self):
+        pass

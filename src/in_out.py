@@ -4,6 +4,39 @@ import numpy as np
 from problem import *
 from grid import *
 
+def user_input():
+    buildings = [
+        "input/charleston_road.in",
+        "input/rue_de_londres.in",
+        "input/opera.in",
+        "input/lets_go_higher.in"
+    ]
+
+    algorithms = [
+        Problem.hill_climbing,
+        Problem.hill_climbing_steepest_ascent,
+        Problem.simulated_annealing,
+        Problem.genetic_algorithm
+    ]
+
+    print("Select the building:")
+    print("[1] Charleston Road")
+    print("[2] Rue de Londres")
+    print("[3] Opera")
+    print("[4] Let's Go Higher")
+
+    selected_building = int(input()) - 1
+
+    print("Select the optimization algorithm:")
+    print("[1] Hill Climbing")
+    print("[2] Hill Climbing - Steepest Ascent")
+    print("[3] Simmulated Annealing")
+    print("[4] Genetic Algorithm")
+
+    selected_algorithm = int(input()) - 1
+
+    return buildings[selected_building], algorithms[selected_algorithm]
+
 def read_file(filename) -> Problem:
     with open(filename) as file:
         lines = file.read().split("\n")
