@@ -80,7 +80,7 @@ class Problem:
 
             return neighbour, operation, (router)
 
-    def neighbours(self, solution) -> Solution:
+    def neighbours(self) -> Solution:
         """Generate all possible neighbours of a given state"""
 
         # Total number of possible neighbours
@@ -170,12 +170,12 @@ class Problem:
             neighbour_score = neighbour.evaluate()
 
             delta = current_score - neighbour_score
-            # print("Delta: ", delta, "t: ", t)
             if delta >= 0:
                 self.solution = neighbour
                 current_score = neighbour_score
                 neighbours = self.neighbours()
             else:
+                # print("Delta: ", delta, "t: ", t, "Chance:" , math.exp(delta / t))
                 if math.exp(delta / t) > random.uniform(0, 1):
                     self.solution = neighbour
                     current_score = neighbour_score
