@@ -202,19 +202,24 @@ class Problem:
         while current_iterations < max_iterations:
             new_population = []
 
-            for _ in range(int(len(current_population) / 2)):
+            x = current_population[0]
+            y = current_population[-1]
+            child = self.crossover_1(x, y)
+            if random.uniform(0, 1) < 0.2:
+                    child = self.mutation(child)
+            new_population.append(child)
+
+            for _ in range(int(len(current_population) - 1)):
                 x = current_population.pop()
-                y = current_population.pop()
+                y = current_population[-1]
                 child = self.crossover_1(x, y)
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
                 new_population.append(child)
-                print("A")
             current_population = new_population
             random.shuffle(current_population)
-            print("Shuffled population")
-
+            current_iterations += 1
         return max(current_population, key=lambda elem: elem.evaluate())
 
     def crossover_1(self, parent1: Solution, parent2: Solution):
@@ -225,10 +230,6 @@ class Problem:
         # Get the y bounds of the router lists in which there are routers in either list
         min_y_pos = self.H
         max_y_pos = 0
-        
-        print("Parent1: ", parent1)
-        print("Parent2: ", parent2)
-
 
         for i in range(len(parent1.routers)):
             min_y_pos = min(
@@ -331,9 +332,7 @@ class Problem:
 
     def mutation(self, solution: Solution):
         self.solution = solution
-        result, _ = next(self.neighbours())
-        result.calculate_coverage()
-        return result
+        return next(self.neighbours())[0]
 
     def generate_initial_solution(self, size):
         return [Solution(self) for _ in range(size)]
