@@ -33,6 +33,7 @@ def user_input() -> tuple:
 
     selected_building = int(input()) - 1
 
+    print()
     print("Select the optimization algorithm:")
     print("[1] Hill Climbing")
     print("[2] Hill Climbing - Steepest Ascent")
@@ -77,10 +78,8 @@ def plot(solution: Solution) -> None:
     cells = backbone(solution)
 
     axes.imshow(cells, vmin=-2, vmax=4)
+    # solution.calculate_initial_coverage()
     axes.imshow(solution.coverage.clip(0,1), cmap=plt.cm.gray, alpha=0.2)
-
-    print(f"Covered cells {solution.covered_cells}")
-    print(f"Placed routers {len(solution.get_placed_routers())}")
 
     plt.savefig("out/grid.png")
     plt.show()
@@ -94,18 +93,19 @@ def backbone(solution: Solution) -> np.array:
     g = solution.graph
     grid = solution.problem.grid
 
+    for router in solution.get_placed_routers():
+        grid.place_router(router)
+
     for router in g.result:
         start = g.vertices[router[0]]
         target = g.vertices[router[1]]
-
-        grid.place_router(start)
 
         if start[0] == target[0]:
             s = min((start[1], target[1]))
             e = max((start[1], target[1]))
 
             for j in range(s, e):
-                if j != start[1]:
+                if j != s:
                     grid.place_cable((start[0], j))
 
         elif start[1] == target[1]:
@@ -113,7 +113,7 @@ def backbone(solution: Solution) -> np.array:
             e = max((start[0], target[0]))
 
             for i in range(s, e):
-                if i != start[0]:
+                if i != s:
                     grid.place_cable((i, start[1]))
 
         else:

@@ -11,6 +11,8 @@ class Solution:
             self.problem = problem
 
             # Generate initial solution
+            print("Generating initial solution...")
+
             for _ in range(problem.B // problem.Pr):
                 i = random.randrange(problem.H)
                 j = random.randrange(problem.W)
@@ -19,7 +21,7 @@ class Solution:
                     i = random.randrange(problem.H)
                     j = random.randrange(problem.W)
 
-                self.routers.append([i, j])
+                self.routers.append((i, j))
 
             # Index from which we starting not counting the routers to the final solution
             self.cutoff = len(self.routers)
@@ -51,17 +53,22 @@ class Solution:
 
         t = self.covered_cells
         B = self.problem.B
-        N = self.calculate_mst()  
+        N = self.calculate_mst()
         Pb = self.problem.Pb
         M = self.cutoff
         Pr = self.problem.Pr
 
         remaining_budget = (B - (N * Pb + M * Pr))
 
-        # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+        while remaining_budget < 0:
+            print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
-        if remaining_budget < 0:
-            return -1
+            self.reduce_cuttoff()
+            t = self.covered_cells
+            M = self.cutoff
+            N = self.calculate_mst()
+
+            remaining_budget = (B - (N * Pb + M * Pr))
 
         return 1000 * t + remaining_budget
 
@@ -84,39 +91,29 @@ class Solution:
         for router in self.routers[:self.cutoff]:
             self.calculate_coverage_after_operation(router, 1)
 
-    def calculate_coverage(self, operation: str, args) -> None:
+    def calculate_coverage(self, args) -> None:
         """
         Calculate the coverage of the cells after performing an operation.
         """
 
-        if operation == "MOVE":
-            old_coords = args[0]
-            new_coords = args[1]
+        old_coords = args[0]
+        new_coords = args[1]
 
-            self.calculate_coverage_after_operation(old_coords, -1)
-            self.calculate_coverage_after_operation(new_coords, 1)
-
-        elif operation == "ADD":
-            router_to_add = args
-
-            self.calculate_coverage_after_operation(router_to_add, 1)
-
-        elif operation == "REMOVE":
-            router_to_remove = args
-
-            self.calculate_coverage_after_operation(router_to_remove, -1)
+        self.calculate_coverage_after_operation(old_coords, -1)
+        self.calculate_coverage_after_operation(new_coords, 1)
 
     def calculate_coverage_after_operation(self, router, operation: int) -> None:
         """
         Calculate the resulting coverage after removing or adding a router.
         """
+
         router_covered_cells = self.problem.grid.router_coverage(router)
 
         for cell in router_covered_cells:
-            before = self.coverage[cell[0], cell[1]] 
+            before = self.coverage[cell[0], cell[1]]
             self.coverage[cell[0], cell[1]] = max(0, before + operation)
             after = self.coverage[cell[0], cell[1]]
-            
+
             if before == 0 and after == 1:
                 self.covered_cells += 1
 
@@ -127,4 +124,15 @@ class Solution:
         """
         Returns the effectively placed routers, that is, those not being cut off.
         """
+
         return self.routers[:self.cutoff]
+
+    def reduce_cuttoff(self) -> None:
+        """
+        Reduce the cutoff, effectively removing the last router from the solution
+        """
+
+        removed_router = self.routers[self.cutoff - 1]
+        self.cutoff -= 1
+
+        self.calculate_coverage_after_operation(removed_router, -1)

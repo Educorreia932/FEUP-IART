@@ -1,22 +1,25 @@
 class Graph:
-    def __init__(self, vertices) -> None:
-        self.V = len(vertices)
-        self.vertices = list(vertices)
-        self.graph = []
+    def __init__(self, vertices, parent_graph=None, removed_router=None, added_router=None) -> None:
+        if parent_graph == None:
+            self.vertices = list(vertices)
+            self.edges = []
 
-        for i in range(self.V - 1):
-            for j in range(i + 1, self.V):
-                u = self.vertices[i]
-                v = self.vertices[j]
+            for i in range(len(vertices) - 1):
+                for j in range(i + 1, len(vertices)):
+                    u = self.vertices[i]
+                    v = self.vertices[j]
+                    w = self.weight(u, v)
 
-                w = self.weight(u, v)
+                    self.edges.append([i, j, w])
 
-                self.graph.append([i, j, w])
+            # Amount of connections each vertex has on the minimum spanning tree
+            # Used to place backbones on router with more than one connection
+            self.children_amount = [0] * len(vertices)
 
-        # Amount of connections each vertex has on the MST
-        # Used to place backbones on router with more than one connection
-        self.childrenAmount = [0] * self.V
-
+        else:
+            self.vertices = parent_graph.copy()
+            self.edges = parent_graph.edges().copy()
+            self.children_amount = parent_graph.children_amount.copy()
 
     def find(self, parent, i):
         if parent[i] == i:
@@ -38,23 +41,27 @@ class Graph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
-    def weight(self, u, v):
-        """Calculates the Chebyshev distance between two points"""
+    @staticmethod
+    def weight(u, v):
+        """
+        Calculates the Chebyshev distance between two points
+        """
+
         return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
 
     def kruskal(self):
-        self.graph = sorted(self.graph, key = lambda edge: edge[2])
+        self.edges = sorted(self.edges, key=lambda edge: edge[2])
         i, e = 0, 0
         self.result = []
         parent = []
         rank = []
 
-        for node in range(self.V):
+        for node in range(len(self.vertices)):
             parent.append(node)
             rank.append(0)
 
-        while e < self.V - 1:
-            u, v, w = self.graph[i]
+        while e < len(self.vertices) - 1:
+            u, v, w = self.edges[i]
             i += 1
             x = self.find(parent, u)
             y = self.find(parent, v)
@@ -62,21 +69,20 @@ class Graph:
             if x != y:
                 e += 1
                 self.result.append([u, v, w])
-                self.childrenAmount[u] += 1
-                self.childrenAmount[v] += 1
+                self.children_amount[u] += 1
+                self.children_amount[v] += 1
                 self.apply_union(parent, rank, x, y)
 
     def get_mst_distance(self):
         result = 0
-        
+
         for e in self.result:
             result += e[2]
-            result += 1 if self.childrenAmount[e[0]] > 1 else 0
-            result += 1 if self.childrenAmount[e[1]] > 1 else 0
+            result += 1 if self.children_amount[e[0]] > 1 else 0
+            result += 1 if self.children_amount[e[1]] > 1 else 0
 
             # Reset number of connections so that we dont put extra backbones
-            self.childrenAmount[e[0]] = 0
-            self.childrenAmount[e[1]] = 0
+            self.children_amount[e[0]] = 0
+            self.children_amount[e[1]] = 0
 
         return result - 1  # -1 because of the initial backbone
-        # return sum([e[2] for e in self.result])
