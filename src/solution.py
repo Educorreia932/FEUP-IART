@@ -45,7 +45,9 @@ class Solution:
             self.coverage = parent_solution.coverage.copy()
 
     def evaluate(self) -> int:
-        """Evaluate the current solution using the score function"""
+        """
+        Evaluate the current solution using the score function.
+        """
 
         t = self.covered_cells
         B = self.problem.B
@@ -64,14 +66,16 @@ class Solution:
         return 1000 * t + remaining_budget
 
     def calculate_mst(self) -> None:
-        """Graph representing backbone that connects all routers"""
+        """
+        Calculate the graph (minimum spanning tree) representing backbone that connects all routers.
+        """
 
         self.graph = Graph(self.routers[:self.cutoff] + [self.problem.b])
         self.graph.kruskal()
 
         return self.graph.get_mst_distance()
 
-    def calculate_initial_coverage(self):
+    def calculate_initial_coverage(self) -> None:
         H = self.problem.H
         W = self.problem.W
 
@@ -80,8 +84,10 @@ class Solution:
         for router in self.routers[:self.cutoff]:
             self.calculate_coverage_after_operation(router, 1)
 
-    def calculate_coverage(self, operation, args) -> None:
-        """Calculate the coverage of the cells after performing an operation"""
+    def calculate_coverage(self, operation: str, args) -> None:
+        """
+        Calculate the coverage of the cells after performing an operation.
+        """
 
         if operation == "MOVE":
             old_coords = args[0]
@@ -100,7 +106,10 @@ class Solution:
 
             self.calculate_coverage_after_operation(router_to_remove, -1)
 
-    def calculate_coverage_after_operation(self, router, operation):
+    def calculate_coverage_after_operation(self, router, operation: int) -> None:
+        """
+        Calculate the resulting coverage after removing or adding a router.
+        """
         router_covered_cells = self.problem.grid.router_coverage(router)
 
         for cell in router_covered_cells:
@@ -114,6 +123,8 @@ class Solution:
             elif before == 1 and after == 0:
                 self.covered_cells -= 1
 
-    def get_placed_routers(self):
+    def get_placed_routers(self) -> list:
+        """
+        Returns the effectively placed routers, that is, those not being cut off.
+        """
         return self.routers[:self.cutoff]
-

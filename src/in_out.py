@@ -4,7 +4,11 @@ import numpy as np
 from problem import *
 from grid import *
 
-def user_input():
+def user_input() -> tuple:
+    """
+    Get user input selection for the building to be considered to the problem and the algorithm to be used.
+    """
+
     buildings = [
         "input/example.in",
         "input/charleston_road.in",
@@ -39,7 +43,10 @@ def user_input():
 
     return buildings[selected_building], algorithms[selected_algorithm]
 
-def read_file(filename) -> Problem:
+def read_file(filename: str) -> Problem:
+    """
+    Read problem information from input file.
+    """
     with open(filename) as file:
         lines = file.read().split("\n")
 
@@ -56,6 +63,10 @@ def read_file(filename) -> Problem:
         return Problem(H, W, R, Pb, Pr, B, (br, bc), Grid(cells))
 
 def plot(solution: Solution) -> None:
+    """
+    Plot the resulting solution building grid.
+    """
+
     figure = plt.figure()
 
     axes = plt.Axes(figure, (0, 0, 1, 1))
@@ -74,7 +85,12 @@ def plot(solution: Solution) -> None:
     plt.savefig("out/grid.png")
     plt.show()
 
-def backbone(solution: Solution):
+def backbone(solution: Solution) -> np.array:
+    """
+    Place cable and router cells in grid after solving the problem.
+    This is necessary to plotting the resulting building grid.
+    """
+
     g = solution.graph
     grid = solution.problem.grid
 

@@ -10,12 +10,14 @@ CELL_TYPE = {
 
 
 class Grid:
-    def __init__(self, cells) -> None:
+    def __init__(self, cells: np.array) -> None:
         self.cells = cells
         # print("Target amount:", len(np.argwhere(self.cells == CELL_TYPE["."])))
 
     def router_can_see(self, coordinates, target) -> bool:
-        """Returns wheter a route can see a cell or not"""
+        """
+        Returns wheter a route can see a cell or not.
+        """
 
         top = min(target[0], coordinates[0])
         bottom = max(target[0], coordinates[0])
@@ -26,7 +28,9 @@ class Grid:
         return np.all(self.cells[top:bottom + 1, left:right + 1] != CELL_TYPE["#"])
 
     def router_coverage(self, coordinates) -> bool:
-        """Returns the cells covered by a router's wireless range"""
+        """
+        Returns the cells covered by a router's wireless range
+        """
 
         radius = self.problem.R
         H = self.problem.H
@@ -74,7 +78,13 @@ class Grid:
         return covered_cells
 
     def place_router(self, coords):
+        """
+        Places a router cell.
+        """
         self.cells[coords[0], coords[1]] = CELL_TYPE["r"]
 
     def place_cable(self, coords):
+        """
+        Places a cable cell.
+        """
         self.cells[coords[0], coords[1]] = CELL_TYPE["b"]
