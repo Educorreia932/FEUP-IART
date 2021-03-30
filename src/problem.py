@@ -123,10 +123,10 @@ class Problem:
         current_score = self.solution.evaluate()
 
         while True:
-            neigbourhood = [(neighbour, operation, args) for (neighbour, operation, args) in self.neighbours()]
+            neigbourhood = [(neighbour, args) for (neighbour, operation, args) in self.neighbours()]
             neigbourhood_size = len(neigbourhood)
 
-            if len(neigbourhood_size ) == 0:
+            if len(neigbourhood_size) == 0:
                 return self.solution
 
             best_neighbour, operation, args = max(neigbourhood, key=lambda s: s[0].evaluate())
@@ -158,12 +158,12 @@ class Problem:
         while t > 10:
             print(f"Current temperature: {t}")
 
-            neighbour, operation, args = next(neighbours, (None, None, None))
-
+            neighbour, args = next(neighbours, (None, None, None))
+            print("args: ", args)
             if neighbour == None:
                 break
 
-            neighbour.calculate_coverage(operation, args)
+            neighbour.calculate_coverage(args)
             neighbour_score = neighbour.evaluate()
             if neighbour_score != -1:
                 delta = current_score - neighbour_score

@@ -72,7 +72,7 @@ class Grid:
             for j in range(left, right):
                 target = (i, j)
 
-                if self.cells[target] != CELL_TYPE["-"] and self.router_can_see(coordinates, target):
+                if self.cells[target] == CELL_TYPE["."] and self.router_can_see(coordinates, target):
                     covered_cells.append(target)
 
         return covered_cells

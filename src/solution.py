@@ -21,7 +21,7 @@ class Solution:
                     i = random.randrange(problem.H)
                     j = random.randrange(problem.W)
 
-                self.routers.append([i, j])
+                self.routers.append((i, j))
 
             # Index from which we starting not counting the routers to the final solution
             self.cutoff = len(self.routers)

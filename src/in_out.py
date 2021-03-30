@@ -78,17 +78,18 @@ def plot(solution: Solution) -> None:
     cells = backbone(solution)
 
     axes.imshow(cells, vmin=-2, vmax=4)
+    # solution.calculate_initial_coverage()
     axes.imshow(solution.coverage.clip(0,1), cmap=plt.cm.gray, alpha=0.2)
 
     plt.savefig("out/grid.png")
-    # plt.show()
+    plt.show()
 
 def backbone(solution: Solution) -> np.array:
     """
     Place cable and router cells in grid after solving the problem.
     This is necessary to plotting the resulting building grid.
     """
-    
+
     g = solution.graph
     grid = solution.problem.grid
 
