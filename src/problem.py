@@ -1,6 +1,7 @@
 import random
 import numpy as np
 import math
+from time import sleep
 
 from grid import *
 from solution import *
@@ -169,7 +170,7 @@ class Problem:
         neighbours = self.neighbours()
         currentIteration = 1
 
-        while t > 0.1:
+        while t > 10:
             print(f"Current temperature: {t}")
 
             neighbour, operation, args = next(neighbours, (None, None, None))
@@ -179,27 +180,28 @@ class Problem:
 
             neighbour.calculate_coverage(operation, args)
             neighbour_score = neighbour.evaluate()
+            if neighbour_score != -1:
+                delta = current_score - neighbour_score
 
-            delta = current_score - neighbour_score
-
-            if delta >= 0:
-                self.solution = neighbour
-                current_score = neighbour_score
-                neighbours = self.neighbours()
-
-            else:
-                print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
-                if math.exp(delta / t) > random.uniform(0, 1):
+                if delta >= 0:
                     self.solution = neighbour
                     current_score = neighbour_score
                     neighbours = self.neighbours()
 
+                else:
+                    print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
+                    if math.exp(delta / t) > random.uniform(0, 1):
+                        self.solution = neighbour
+                        current_score = neighbour_score
+                        neighbours = self.neighbours()
+
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            # t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
-            t = T0 / (1 + 10 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
-            # t = T0 / (1 + 0.1 * currentIteration)             # Linear multiplicative cooling 
+            t = T0 * 0.8 ** currentIteration                 # Exponential multiplicative cooling
+            # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
+            # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
             currentIteration += 1
+            sleep(0.1)
 
         return self.solution
 

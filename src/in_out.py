@@ -90,22 +90,23 @@ def backbone(solution: Solution) -> np.array:
     Place cable and router cells in grid after solving the problem.
     This is necessary to plotting the resulting building grid.
     """
-
+    
     g = solution.graph
     grid = solution.problem.grid
+
+    for router in solution.get_placed_routers():
+        grid.place_router(router)
 
     for router in g.result:
         start = g.vertices[router[0]]
         target = g.vertices[router[1]]
-
-        grid.place_router(start)
 
         if start[0] == target[0]:
             s = min((start[1], target[1]))
             e = max((start[1], target[1]))
 
             for j in range(s, e):
-                if j != start[1]:
+                if j != s:
                     grid.place_cable((start[0], j))
 
         elif start[1] == target[1]:
@@ -113,7 +114,7 @@ def backbone(solution: Solution) -> np.array:
             e = max((start[0], target[0]))
 
             for i in range(s, e):
-                if i != start[0]:
+                if i != s:
                     grid.place_cable((i, start[1]))
 
         else:
