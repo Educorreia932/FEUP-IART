@@ -33,6 +33,7 @@ def user_input() -> tuple:
 
     selected_building = int(input()) - 1
 
+    print()
     print("Select the optimization algorithm:")
     print("[1] Hill Climbing")
     print("[2] Hill Climbing - Steepest Ascent")
@@ -79,11 +80,8 @@ def plot(solution: Solution) -> None:
     axes.imshow(cells, vmin=-2, vmax=4)
     axes.imshow(solution.coverage.clip(0,1), cmap=plt.cm.gray, alpha=0.2)
 
-    print(f"Covered cells {solution.covered_cells}")
-    print(f"Placed routers {len(solution.get_placed_routers())}")
-
     plt.savefig("out/grid.png")
-    plt.show()
+    # plt.show()
 
 def backbone(solution: Solution) -> np.array:
     """
