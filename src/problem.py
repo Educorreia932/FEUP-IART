@@ -209,24 +209,24 @@ class Problem:
         """
 
         current_iterations = 0
-        current_population = self.generate_initial_solution()
+        current_population = self.generate_initial_solution(10)
         max_iterations = 100
 
         while current_iterations < max_iterations:
             new_population = []
 
-            for _ in range(len(current_population)):
+            for _ in range(int(len(current_population) / 2)):
                 x = current_population.pop()
                 y = current_population.pop()
-                child = self.crossover(x, y)
+                child = self.crossover_1(x, y)
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
-
                 new_population.append(child)
-
+                print("A")
             current_population = new_population
             random.shuffle(current_population)
+            print("Shuffled population")
 
         return max(current_population, key=lambda elem: elem.evaluate())
 
@@ -238,13 +238,22 @@ class Problem:
         # Get the y bounds of the router lists in which there are routers in either list
         min_y_pos = self.H
         max_y_pos = 0
+        
+        print("Parent1: ", parent1)
+        print("Parent2: ", parent2)
+
 
         for i in range(len(parent1.routers)):
             min_y_pos = min(
-                min_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+                min_y_pos, parent1.routers[i][0])
+            max_y_pos = max(
+                max_y_pos, parent1.routers[i][0])
 
-            min_y_pos = max(
-                max_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+        for i in range(len(parent2.routers)):
+            min_y_pos = min(
+                min_y_pos, parent2.routers[i][0])
+            max_y_pos = max(
+                max_y_pos, parent2.routers[i][0])
 
         # Make a random cut between the 2, both included
         y_cut = random.randint(min_y_pos, max_y_pos)
@@ -255,21 +264,20 @@ class Problem:
             for i in range(len(parent1.routers)):
                 if(parent1.routers[i][0] >= y_cut):
                     child_routers.append(parent1.routers[i])
-
-
+            for i in range(len(parent2.routers)):
                 if(parent2.routers[i][0] <= y_cut):
                     child_routers.append(parent2.routers[i])
         else:
             for i in range(len(parent1.routers)):
                 if(parent1.routers[i][0] <= y_cut):
                     child_routers.append(parent1.routers[i])
-
+            for i in range(len(parent2.routers)):
                 if(parent2.routers[i][0] >= y_cut):
                     child_routers.append(parent2.routers[i])
                     
         cutoff = 0
 
-        if (random.choice(True, False)):
+        if (random.choice([True, False])):
             cutoff = parent1.cutoff
 
         else:
@@ -293,8 +301,7 @@ class Problem:
         for i in range(len(parent1.routers)):
             min_y_pos = min(
                 min_y_pos, parent1.routers[i][0], parent2.routers[i][0])
-
-            min_y_pos = max(
+            max_y_pos = max(
                 max_y_pos, parent1.routers[i][0], parent2.routers[i][0])
 
         # Make a random cut between the 2, both included
@@ -337,7 +344,9 @@ class Problem:
 
     def mutation(self, solution: Solution):
         self.solution = solution
-        return next(self.neighbours())
+        result, _ = next(self.neighbours())
+        result.calculate_coverage()
+        return result
 
     def generate_initial_solution(self, size):
         return [Solution(self) for _ in range(size)]
