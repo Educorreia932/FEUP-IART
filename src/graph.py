@@ -43,14 +43,6 @@ class Graph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
-    @staticmethod
-    def weight(u, v):
-        """
-        Calculates the Chebyshev distance between two points
-        """
-
-        return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
-
     def kruskal(self):
         self.edges = sorted(self.edges, key=lambda edge: edge[2])
         i, e = 0, 0
@@ -66,6 +58,7 @@ class Graph:
             u, v, w = self.edges[i]
             i += 1
             x = self.find(parent, u)
+            print(v, self.V)
             y = self.find(parent, v)
 
             if x != y:
@@ -103,7 +96,7 @@ class Graph:
         for i in range(self.V):
             v = self.vertices[i]
             w = self.weight(router, v)
-            self.edges.append([self.V + 1, i, w])
+            self.edges.append([self.V, i, w])
 
         self.V += 1
         self.children_amount = [0] * self.V
@@ -113,15 +106,23 @@ class Graph:
         self.vertices.pop(router_index)
 
         E = len(self.edges) # Total number of edges
-        to_remove = []
+        i = 0
         
-        for i in range(E):
+        while i < E:
             if router_index in (self.edges[i][0], self.edges[i][1]):
-                to_remove.append(i)
-        
-        for index in to_remove:
-            self.edges.pop(index)
+                self.edges.pop(i)
+                E -= 1
+
+            else:
+                i += 1
 
         self.V -= 1
         self.children_amount = [0] * self.V
 
+    @staticmethod
+    def weight(u, v):
+        """
+        Calculates the Chebyshev distance between two points
+        """
+
+        return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
