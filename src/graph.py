@@ -58,7 +58,6 @@ class Graph:
             u, v, w = self.edges[i]
             i += 1
             x = self.find(parent, u)
-            print(v, self.V)
             y = self.find(parent, v)
 
             if x != y:
@@ -102,12 +101,16 @@ class Graph:
         self.children_amount = [0] * self.V
 
     def removed_router(self, router):
+        """
+        Update graph information after removing a router.
+        """
+
         router_index = self.vertices.index(router)
         self.vertices.pop(router_index)
 
-        E = len(self.edges) # Total number of edges
+        E = len(self.edges)  # Total number of edges
         i = 0
-        
+
         while i < E:
             if router_index in (self.edges[i][0], self.edges[i][1]):
                 self.edges.pop(i)
@@ -115,6 +118,13 @@ class Graph:
 
             else:
                 i += 1
+
+        for i in range(len(self.edges)):
+            if self.edges[i][0] > router_index:
+                self.edges[i][0] -= 1
+
+            if self.edges[i][1] > router_index:
+                self.edges[i][1] -= 1
 
         self.V -= 1
         self.children_amount = [0] * self.V

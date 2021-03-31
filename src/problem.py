@@ -120,17 +120,18 @@ class Problem:
 
         self.solution = Solution(self)
         neighbour_score = self.solution.evaluate()
+        best_neighbour_score = neighbour_score 
 
         while True:
             improved = False
-            best_neighbour = self.solution
-            best_neighbour_score = neighbour_score 
 
             for (neighbour, args) in self.neighbours():
-                neighbour.calculate_coverage(args)
-                neighbour_score = best_neighbour.evaluate()
+                neighbour.update_coverage(args)
+                neighbour.calculate_graph()
+                neighbour_score = neighbour.evaluate()
 
                 if neighbour_score > best_neighbour_score:
+                    self.solution = neighbour
                     best_neighbour_score = neighbour_score
                     improved = True
 

@@ -40,6 +40,8 @@ class Solution:
                 self.update_coverage_after_operation(removed_router, -1)
                 score = self.evaluate()
 
+            print("Finished generating")
+
         else:
             self.routers = parent_solution.routers.copy()
             self.problem = parent_solution.problem
@@ -106,6 +108,7 @@ class Solution:
         W = self.problem.W
 
         self.coverage = np.zeros((H, W), dtype=np.int8)
+        self.covered_cells = 0
 
         for router in self.routers[:self.cutoff]:
             self.update_coverage_after_operation(router, 1)
