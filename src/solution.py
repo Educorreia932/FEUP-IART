@@ -29,14 +29,15 @@ class Solution:
             # Number of covered cells by wireless
             self.covered_cells = 0
 
-            self.calculate_initial_coverage()
+            self.calculate_coverage()
+            self.calculate_graph()
 
             score = self.evaluate()
 
             while score < 0:
                 removed_router = self.routers[self.cutoff - 1]
                 self.cutoff -= 1
-                self.calculate_coverage_after_operation(removed_router, -1)
+                self.update_coverage_after_operation(removed_router, -1)
                 score = self.evaluate()
 
         else:
@@ -45,6 +46,7 @@ class Solution:
             self.cutoff = parent_solution.cutoff
             self.covered_cells = parent_solution.covered_cells
             self.coverage = parent_solution.coverage.copy()
+            self.graph = Graph(parent_graph=parent_solution.graph)
 
     def evaluate(self) -> int:
         """
@@ -61,16 +63,17 @@ class Solution:
         remaining_budget = (B - (N * Pb + M * Pr))
 
         while remaining_budget < 0:
-            print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+            # Reduce cuttoff for as long as we must until the solution is feasible
+            # That is, until the remaining budget is positive
 
-            self.reduce_cuttoff()
+            self.reduce_cuttoff()    # Update the cutoff index, the coverage and the graph
             t = self.covered_cells
             M = self.cutoff
             N = self.calculate_mst()
 
             remaining_budget = (B - (N * Pb + M * Pr))
 
-        print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+        # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
         return 1000 * t + remaining_budget
 
@@ -78,33 +81,47 @@ class Solution:
         """
         Calculate the graph (minimum spanning tree) representing backbone that connects all routers.
         """
-
-        self.graph = Graph(self.routers[:self.cutoff] + [self.problem.b])
+        
         self.graph.kruskal()
 
         return self.graph.get_mst_distance()
 
-    def calculate_initial_coverage(self) -> None:
+    def calculate_graph(self):
+        self.graph = Graph(self.get_placed_routers() + [self.problem.b])
+
+    def update_graph_after_move(self, before, after):
+        self.graph = Graph(parent_graph=self.graph)
+        self.graph.moved_router(before, after)
+
+    def update_graph_after_add(self, router):
+        self.graph = Graph(parent_graph=self.graph)
+        self.graph.removed_router(router)
+
+    def update_graph_after_remove(self, router):
+        self.graph = Graph(parent_graph=self.graph)
+        self.graph.removed_router(router)
+
+    def calculate_coverage(self) -> None:
         H = self.problem.H
         W = self.problem.W
 
         self.coverage = np.zeros((H, W), dtype=np.int8)
 
         for router in self.routers[:self.cutoff]:
-            self.calculate_coverage_after_operation(router, 1)
+            self.update_coverage_after_operation(router, 1)
 
-    def calculate_coverage(self, args) -> None:
+    def update_coverage(self, coordinates) -> None:
         """
-        Calculate the coverage of the cells after performing an operation.
+        Calculate the coverage of the cells after performing moving a router.
         """
 
-        old_coords = args[0]
-        new_coords = args[1]
+        old_coords = coordinates[0]
+        new_coords = coordinates[1]
 
-        self.calculate_coverage_after_operation(old_coords, -1)
-        self.calculate_coverage_after_operation(new_coords, 1)
+        self.update_coverage_after_operation(old_coords, -1)
+        self.update_coverage_after_operation(new_coords, 1)
 
-    def calculate_coverage_after_operation(self, router, operation: int) -> None:
+    def update_coverage_after_operation(self, router, operation: int) -> None:
         """
         Calculate the resulting coverage after removing or adding a router.
         """
@@ -137,4 +154,16 @@ class Solution:
         removed_router = self.routers[self.cutoff - 1]
         self.cutoff -= 1
 
-        self.calculate_coverage_after_operation(removed_router, -1)
+        self.update_coverage_after_operation(removed_router, -1)
+        self.update_graph_after_remove(removed_router)
+
+    def increase_cuttoff(self) -> None:
+        """
+        Increase the cutoff, effectively adding the last router to the solution
+        """
+
+        added_router = self.routers[self.cutoff - 1]
+        self.cutoff += 1
+
+        self.update_coverage_after_operation(added_router, 1)
+        self.update_graph_after_add()

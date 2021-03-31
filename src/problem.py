@@ -90,12 +90,12 @@ class Problem:
         
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
-
         i = 0
 
-        while i < 100:
+        while i < 50:
             for neighbour, args in self.neighbours():
-                neighbour.calculate_coverage(args)
+                neighbour.update_coverage(args)
+                neighbour.update_graph_after_move(args[0], args[1])
 
                 neighbour_score = neighbour.evaluate()
 
@@ -103,8 +103,7 @@ class Problem:
                     self.solution = neighbour
                     current_score = neighbour_score
 
-                    print(f"Current score: {current_score} {i}")
-
+                    print(f"Current score: {current_score}")
                     i += 1
 
                     break
@@ -217,7 +216,7 @@ class Problem:
             current_population = new_population
             random.shuffle(current_population)
             current_iterations += 1
-            
+
         return max(current_population, key=lambda elem: elem.evaluate())
 
     def crossover_1(self, parent1: Solution, parent2: Solution):
