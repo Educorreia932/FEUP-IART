@@ -39,6 +39,7 @@ def user_input() -> tuple:
     print("[2] Hill Climbing - Steepest Ascent")
     print("[3] Simmulated Annealing")
     print("[4] Genetic Algorithm")
+    print()
 
     selected_algorithm = int(input()) - 1
 
@@ -92,6 +93,7 @@ def backbone(solution: Solution) -> np.array:
 
     g = solution.graph
     grid = solution.problem.grid
+    grid.place_backbone(solution.problem.b)
 
     for router in solution.get_placed_routers():
         grid.place_router(router)

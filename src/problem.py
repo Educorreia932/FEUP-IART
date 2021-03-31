@@ -120,26 +120,22 @@ class Problem:
         """
 
         self.solution = Solution(self)
-        current_score = self.solution.evaluate()
+        neighbour_score = self.solution.evaluate()
 
         while True:
-            neigbourhood = [(neighbour, args) for (neighbour, operation, args) in self.neighbours()]
-            neigbourhood_size = len(neigbourhood)
+            improved = False
+            best_neighbour = self.solution
+            best_neighbour_score = neighbour_score 
 
-            if len(neigbourhood_size) == 0:
-                return self.solution
+            for (neighbour, args) in self.neighbours():
+                neighbour.calculate_coverage(args)
+                neighbour_score = best_neighbour.evaluate()
 
-            best_neighbour, operation, args = max(neigbourhood, key=lambda s: s[0].evaluate())
-            best_neighbour.calculate_coverage(operation, args)
-            neighbour_score = best_neighbour.evaluate()
+                if neighbour_score > best_neighbour_score:
+                    best_neighbour_score = neighbour_score
+                    improved = True
 
-            if neighbour_score > current_score:
-                self.solution = best_neighbour
-                current_score = neighbour_score
-
-                print(f"Current score: {current_score} | Number of neighbours: {neigbourhood_size}")
-
-            else:
+            if not improved:
                 return self.solution
 
     def simulated_annealing(self) -> Solution:
@@ -217,9 +213,11 @@ class Problem:
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
                 new_population.append(child)
+
             current_population = new_population
             random.shuffle(current_population)
             current_iterations += 1
+            
         return max(current_population, key=lambda elem: elem.evaluate())
 
     def crossover_1(self, parent1: Solution, parent2: Solution):

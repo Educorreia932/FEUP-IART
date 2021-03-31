@@ -70,6 +70,8 @@ class Solution:
 
             remaining_budget = (B - (N * Pb + M * Pr))
 
+        print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+
         return 1000 * t + remaining_budget
 
     def calculate_mst(self) -> None:

@@ -5,7 +5,8 @@ CELL_TYPE = {
     "#": 0,   # Wall cell
     ".": 1,   # Target cell
     "r": 2,   # Router cell
-    "b": 4    # Backbone cell
+    "b": 3,   # Backbone cell
+    "c": 4    # Cable cell
 }
 
 
@@ -81,10 +82,19 @@ class Grid:
         """
         Places a router cell.
         """
+
         self.cells[coords[0], coords[1]] = CELL_TYPE["r"]
+
+    def place_backbone(self, coords):
+        """
+        Places the initial backbone cell.
+        """
+
+        self.cells[coords[0], coords[1]] = CELL_TYPE["b"]
 
     def place_cable(self, coords):
         """
         Places a cable cell.
         """
-        self.cells[coords[0], coords[1]] = CELL_TYPE["b"]
+        
+        self.cells[coords[0], coords[1]] = CELL_TYPE["c"]
