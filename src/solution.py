@@ -60,8 +60,16 @@ class Solution:
 
         remaining_budget = (B - (N * Pb + M * Pr))
 
+        while remaining_budget > 0 and self.cutoff < len(self.routers):
+            self.increase_cuttoff()    # Update the cutoff index, the coverage and the graph
+            t = self.covered_cells
+            M = self.cutoff
+            N = self.calculate_mst()
+
+            remaining_budget = (B - (N * Pb + M * Pr))
+
         while remaining_budget < 0:
-            print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+            # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
             self.reduce_cuttoff()
             t = self.covered_cells
@@ -70,7 +78,7 @@ class Solution:
 
             remaining_budget = (B - (N * Pb + M * Pr))
 
-        print(f"Placed routers {M} | Remaining budget {remaining_budget}")
+        # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
 
         return 1000 * t + remaining_budget
 
@@ -138,3 +146,13 @@ class Solution:
         self.cutoff -= 1
 
         self.calculate_coverage_after_operation(removed_router, -1)
+
+    def increase_cuttoff(self) -> None:
+        """
+        Increase the cutoff, effectively adding the last router to the solution
+        """
+
+        added_router = self.routers[self.cutoff - 1]
+        self.cutoff += 1
+
+        self.calculate_coverage_after_operation(added_router, 1)
