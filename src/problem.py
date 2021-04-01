@@ -95,7 +95,7 @@ class Problem:
         while i < 50:
             for neighbour, args in self.neighbours():
                 neighbour.update_coverage(args)
-                neighbour.update_graph_after_move(args[0], args[1])
+                neighbour.calculate_graph()
 
                 neighbour_score = neighbour.evaluate()
 

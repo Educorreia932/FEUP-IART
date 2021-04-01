@@ -158,7 +158,6 @@ class Solution:
         self.cutoff -= 1
 
         self.update_coverage_after_operation(removed_router, -1)
-        self.update_graph_after_remove(removed_router)
 
     def increase_cuttoff(self) -> None:
         """
@@ -169,4 +168,3 @@ class Solution:
         self.cutoff += 1
 
         self.update_coverage_after_operation(added_router, 1)
-        self.update_graph_after_add()

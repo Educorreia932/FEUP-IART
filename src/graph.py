@@ -86,10 +86,18 @@ class Graph:
         return total_weight - 1  # -1 because of the initial backbone
 
     def moved_router(self, before, after):
+        """
+        Update graph information after moving a router.
+        """
+
         self.removed_router(before)
         self.added_router(after)
 
     def added_router(self, router):
+        """
+        Update graph information after adding a router.
+        """
+
         self.vertices.append(router)
 
         for i in range(self.V):
@@ -104,6 +112,8 @@ class Graph:
         """
         Update graph information after removing a router.
         """
+
+        print(f"Before: {self.edges}")
 
         router_index = self.vertices.index(router)
         self.vertices.pop(router_index)
@@ -128,6 +138,7 @@ class Graph:
 
         self.V -= 1
         self.children_amount = [0] * self.V
+
 
     @staticmethod
     def weight(u, v):
