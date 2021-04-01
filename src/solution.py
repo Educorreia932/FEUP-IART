@@ -64,6 +64,14 @@ class Solution:
 
         remaining_budget = (B - (N * Pb + M * Pr))
 
+        while remaining_budget > 0 and self.cutoff < len(self.routers):
+            self.increase_cuttoff()    # Update the cutoff index, the coverage and the graph
+            t = self.covered_cells
+            M = self.cutoff
+            N = self.calculate_mst()
+
+            remaining_budget = (B - (N * Pb + M * Pr))
+
         while remaining_budget < 0:
             # Reduce cuttoff for as long as we must until the solution is feasible
             # That is, until the remaining budget is positive
@@ -158,13 +166,16 @@ class Solution:
         self.cutoff -= 1
 
         self.update_coverage_after_operation(removed_router, -1)
+        self.calculate_graph()
 
     def increase_cuttoff(self) -> None:
         """
         Increase the cutoff, effectively adding the last router to the solution
         """
 
-        added_router = self.routers[self.cutoff - 1]
+        added_router = self.routers[self.cutoff]
         self.cutoff += 1
 
         self.update_coverage_after_operation(added_router, 1)
+        self.calculate_graph()
+

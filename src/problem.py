@@ -142,49 +142,64 @@ class Problem:
         """
         Simulated Annealing optimization technique.
         """
-        
+
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
+        best_solution = self.solution
+        best_score = current_score
 
         T0 = 100000
         t = T0
+        iterations_per_temperature = 3
         neighbours = self.neighbours()
         currentIteration = 1
 
         while t > 10:
             print(f"Current temperature: {t}")
 
-            neighbour, args = next(neighbours, (None, None, None))
-            print("args: ", args)
-            if neighbour == None:
-                break
+            for _ in range(iterations_per_temperature):
+                neighbour, args = next(neighbours, (None, None))
+                # print("args: ", args)
+                if neighbour == None:
+                    break
 
-            neighbour.calculate_coverage(args)
-            neighbour_score = neighbour.evaluate()
-            if neighbour_score != -1:
-                delta = current_score - neighbour_score
+                
+                neighbour.calculate_coverage(args)
+                neighbour_score = neighbour.evaluate()
+                if neighbour_score != -1:
+                    delta = current_score - neighbour_score
 
-                if delta >= 0:
-                    self.solution = neighbour
-                    current_score = neighbour_score
-                    neighbours = self.neighbours()
-
-                else:
-                    print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
-                    if math.exp(delta / t) > random.uniform(0, 1):
+                    if delta >= 0:
                         self.solution = neighbour
                         current_score = neighbour_score
+                        if neighbour_score > best_score:
+                            best_solution = self.solution
+                            best_score = current_score 
                         neighbours = self.neighbours()
 
+                    else:
+                        print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
+                        if math.exp(delta / t) > random.uniform(0, 1):
+                            self.solution = neighbour
+                            current_score = neighbour_score
+                            if neighbour_score > best_score:
+                                best_solution = self.solution
+                                best_score = current_score
+                            neighbours = self.neighbours()
+
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            t = T0 * 0.8 ** currentIteration                 # Exponential multiplicative cooling
+            t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
-            currentIteration += 1
-            sleep(0.1)
 
-        return self.solution
+            # beta = (1 / (self.R * 1000))
+            # t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
+            currentIteration += 1
+            print(f"Current temperature: {t}")
+
+
+        return best_solution
 
     def genetic_algorithm(self):
         """
@@ -192,30 +207,25 @@ class Problem:
         """
 
         current_iterations = 0
-        current_population = self.generate_initial_solution(10)
-        max_iterations = 100
+        current_population = self.generate_initial_solution(8)
+        max_iterations = 20
 
         while current_iterations < max_iterations:
             new_population = []
 
-            x = current_population[0]
-            y = current_population[-1]
-            child = self.crossover_1(x, y)
-            if random.uniform(0, 1) < 0.2:
-                    child = self.mutation(child)
-            new_population.append(child)
 
-            for _ in range(int(len(current_population) - 1)):
-                x = current_population.pop()
-                y = current_population[-1]
+            for _ in range(int(len(current_population))):
+                x = current_population[random.randint(0, int(len(current_population) / 2))]
+                y = current_population[random.randint(0, int(len(current_population) / 2))]
                 child = self.crossover_1(x, y)
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
+                child.calculate_initial_coverage()
                 new_population.append(child)
 
             current_population = new_population
-            random.shuffle(current_population)
+            current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
             current_iterations += 1
 
         return max(current_population, key=lambda elem: elem.evaluate())
@@ -229,6 +239,7 @@ class Problem:
         min_y_pos = self.H
         max_y_pos = 0
 
+        #Get the y positions of the bottom and topmost routers
         for i in range(len(parent1.routers)):
             min_y_pos = min(
                 min_y_pos, parent1.routers[i][0])
@@ -286,9 +297,17 @@ class Problem:
 
         for i in range(len(parent1.routers)):
             min_y_pos = min(
-                min_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+                min_y_pos, parent1.routers[i][0])
             max_y_pos = max(
-                max_y_pos, parent1.routers[i][0], parent2.routers[i][0])
+                max_y_pos, parent1.routers[i][0])
+
+        for i in range(len(parent2.routers)):
+            min_y_pos = min(
+                min_y_pos, parent2.routers[i][0])
+            max_y_pos = max(
+                max_y_pos, parent2.routers[i][0])
+
+
 
         # Make a random cut between the 2, both included
         y_cuts = []
@@ -297,22 +316,30 @@ class Problem:
         #Get the position of each cut
         for i in range(num_cuts):
             cut_placement = random.randint(min_y_pos, max_y_pos)
-            
-            if(cut_placement in y_cuts):
+            if(cut_placement not in y_cuts):
                 y_cuts.append(cut_placement)
+            else:
+                i -= 1
         
         y_cuts = np.sort(y_cuts)
         y_cuts.append(max_y_pos + 1)
 
+        
+        child = Solution(None, parent1)
+        child_routers = []
+
+
         previous_cut_y_pos = min_y_pos
         for current_cut_y_pos in y_cuts:
             if(random.randint(1, 2) == 1):
-                if(parent1.routers[i][0] < current_cut_y_pos and parent1.routers[i][0] >= previous_cut_y_pos):
-                    child_routers.append(parent1.routers[i])
+                for i in range(len(parent1.routers)):
+                    if(parent1.routers[i][0] < current_cut_y_pos and parent1.routers[i][0] >= previous_cut_y_pos):
+                        child_routers.append(parent1.routers[i])
             else:
-                if(parent2.routers[i][0] < current_cut_y_pos and parent2.routers[i][0] >= previous_cut_y_pos):
-                    child_routers.append(parent2.routers[i])
-            previous_y_cut = i
+                for i in range(len(parent2.routers)):
+                    if(parent2.routers[i][0] < current_cut_y_pos and parent2.routers[i][0] >= previous_cut_y_pos):
+                        child_routers.append(parent2.routers[i])
+            previous_cut_y_pos = current_cut_y_pos
 
 
         cutoff = 0
