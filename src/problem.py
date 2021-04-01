@@ -2,6 +2,7 @@ import random
 import numpy as np
 import math
 from time import sleep
+import matplotlib.pyplot as plt
 
 from grid import *
 from solution import *
@@ -150,31 +151,38 @@ class Problem:
         Simulated Annealing optimization technique.
         """
 
+        temperatures = []
+        scores = []
+
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         best_solution = self.solution
         best_score = current_score
 
-        T0 = 100000
+        T0 = 10000
         t = T0
         iterations_per_temperature = 3
         neighbours = self.neighbours()
         currentIteration = 1
 
         while t > 10:
+            temperatures.append(t)
+            scores.append(current_score)
             print(f"Current temperature: {t}")
 
+            # for _ in range(max(1, int(math.log(currentIteration)))):
             for _ in range(iterations_per_temperature):
                 neighbour, args = next(neighbours, (None, None))
                 # print("args: ", args)
                 if neighbour == None:
-                    break
+                    return best_solution
 
                 
-                neighbour.calculate_coverage(args)
+                neighbour.update_coverage
                 neighbour_score = neighbour.evaluate()
                 if neighbour_score != -1:
-                    delta = current_score - neighbour_score
+                    # delta = current_score - neighbour_score
+                    delta = neighbour_score - current_score
 
                     if delta >= 0:
                         self.solution = neighbour
@@ -195,16 +203,28 @@ class Problem:
                             neighbours = self.neighbours()
 
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
+            # t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
 
-            # beta = (1 / (self.R * 1000))
-            # t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
+            beta = (1 / (self.R * 1000))
+            t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
             currentIteration += 1
             print(f"Current temperature: {t}")
 
+
+        print(scores)
+        plt.xlabel('Iteration')
+        plt.ylabel('Temperature')
+
+        plt.plot(range(len(temperatures)), temperatures)
+
+        ax2=plt.twinx()
+        # make a plot with different y-axis using second axis object
+        ax2.set_ylabel("Score")
+        ax2.plot(range(len(scores)), scores, color="orange")
+        plt.show()
 
         return best_solution
 
