@@ -52,11 +52,18 @@ class Problem:
 
         # Check if it's within bounds of map
         if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
-            return [None] * 3
+            return [None] * 2
 
         # Check if position is valid (not wall and not void)
-        if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
-            return [None] * 2
+        while self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
+            new_coords = (
+                new_coords[0] + direction[0],
+                new_coords[1] + direction[1]
+            )
+
+            # Check if it's within bounds of map
+            if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
+                return [None] * 2
 
         neighbour = Solution(None, self.solution)
         neighbour.routers[router_index] = new_coords

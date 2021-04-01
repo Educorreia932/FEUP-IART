@@ -65,6 +65,9 @@ class Solution:
         remaining_budget = (B - (N * Pb + M * Pr))
 
         while remaining_budget > 0 and self.cutoff < len(self.routers):
+            # Increase cuttoff for as long as we can until the solution is no longer feasible
+            # That is, until the remaining budget is negative
+
             self.increase_cuttoff()    # Update the cutoff index, the coverage and the graph
             t = self.covered_cells
             M = self.cutoff
