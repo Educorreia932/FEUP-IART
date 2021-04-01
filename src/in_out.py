@@ -80,7 +80,7 @@ def plot(solution: Solution) -> None:
 
     axes.imshow(cells, vmin=-2, vmax=4)
     # solution.calculate_initial_coverage()
-    axes.imshow(solution.coverage.clip(0,1), cmap=plt.cm.gray, alpha=0.2)
+    axes.imshow(solution.coverage.clip(0, 1), cmap=plt.cm.gray, alpha=0.2)
 
     plt.savefig("out/grid.png")
     plt.show()

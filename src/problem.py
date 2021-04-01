@@ -52,11 +52,18 @@ class Problem:
 
         # Check if it's within bounds of map
         if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
-            return [None] * 3
+            return [None] * 2
 
         # Check if position is valid (not wall and not void)
-        if self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
-            return [None] * 2
+        while self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
+            new_coords = (
+                new_coords[0] + direction[0],
+                new_coords[1] + direction[1]
+            )
+
+            # Check if it's within bounds of map
+            if new_coords[0] < 0 or new_coords[0] >= self.H or new_coords[1] < 0 or new_coords[1] >= self.W:
+                return [None] * 2
 
         neighbour = Solution(None, self.solution)
         neighbour.routers[router_index] = new_coords
@@ -90,12 +97,12 @@ class Problem:
         
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
-
         i = 0
 
-        while i < 100:
+        while i < 50:
             for neighbour, args in self.neighbours():
-                neighbour.calculate_coverage(args)
+                neighbour.update_coverage(args)
+                neighbour.calculate_graph()
 
                 neighbour_score = neighbour.evaluate()
 
@@ -103,8 +110,7 @@ class Problem:
                     self.solution = neighbour
                     current_score = neighbour_score
 
-                    print(f"Current score: {current_score} {i}")
-
+                    print(f"Current score: {current_score}")
                     i += 1
 
                     break
@@ -121,17 +127,18 @@ class Problem:
 
         self.solution = Solution(self)
         neighbour_score = self.solution.evaluate()
+        best_neighbour_score = neighbour_score 
 
         while True:
             improved = False
-            best_neighbour = self.solution
-            best_neighbour_score = neighbour_score 
 
             for (neighbour, args) in self.neighbours():
-                neighbour.calculate_coverage(args)
-                neighbour_score = best_neighbour.evaluate()
+                neighbour.update_coverage(args)
+                neighbour.calculate_graph()
+                neighbour_score = neighbour.evaluate()
 
                 if neighbour_score > best_neighbour_score:
+                    self.solution = neighbour
                     best_neighbour_score = neighbour_score
                     improved = True
 
@@ -142,49 +149,64 @@ class Problem:
         """
         Simulated Annealing optimization technique.
         """
-        
+
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
+        best_solution = self.solution
+        best_score = current_score
 
         T0 = 100000
         t = T0
+        iterations_per_temperature = 3
         neighbours = self.neighbours()
         currentIteration = 1
 
         while t > 10:
             print(f"Current temperature: {t}")
 
-            neighbour, args = next(neighbours, (None, None, None))
-            print("args: ", args)
-            if neighbour == None:
-                break
+            for _ in range(iterations_per_temperature):
+                neighbour, args = next(neighbours, (None, None))
+                # print("args: ", args)
+                if neighbour == None:
+                    break
 
-            neighbour.calculate_coverage(args)
-            neighbour_score = neighbour.evaluate()
-            if neighbour_score != -1:
-                delta = current_score - neighbour_score
+                
+                neighbour.calculate_coverage(args)
+                neighbour_score = neighbour.evaluate()
+                if neighbour_score != -1:
+                    delta = current_score - neighbour_score
 
-                if delta >= 0:
-                    self.solution = neighbour
-                    current_score = neighbour_score
-                    neighbours = self.neighbours()
-
-                else:
-                    print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
-                    if math.exp(delta / t) > random.uniform(0, 1):
+                    if delta >= 0:
                         self.solution = neighbour
                         current_score = neighbour_score
+                        if neighbour_score > best_score:
+                            best_solution = self.solution
+                            best_score = current_score 
                         neighbours = self.neighbours()
 
+                    else:
+                        print(f"Delta: {delta} | t: {t} | Chance: {math.exp(delta / t)}")
+                        if math.exp(delta / t) > random.uniform(0, 1):
+                            self.solution = neighbour
+                            current_score = neighbour_score
+                            if neighbour_score > best_score:
+                                best_solution = self.solution
+                                best_score = current_score
+                            neighbours = self.neighbours()
+
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            t = T0 * 0.8 ** currentIteration                 # Exponential multiplicative cooling
+            t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
-            currentIteration += 1
-            sleep(0.1)
 
-        return self.solution
+            # beta = (1 / (self.R * 1000))
+            # t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
+            currentIteration += 1
+            print(f"Current temperature: {t}")
+
+
+        return best_solution
 
     def genetic_algorithm(self):
         """
@@ -215,7 +237,7 @@ class Problem:
             current_population = new_population
             current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
             current_iterations += 1
-            
+
         return max(current_population, key=lambda elem: elem.evaluate())
 
     def crossover_1(self, parent1: Solution, parent2: Solution):
