@@ -192,23 +192,26 @@ class Problem:
         """
 
         current_iterations = 0
-        current_population = self.generate_initial_solution(8)
-        max_iterations = 20
+        current_population = self.generate_initial_solution(50)
+        max_iterations = 50
 
         while current_iterations < max_iterations:
             new_population = []
 
 
-            for _ in range(int(len(current_population))):
+            for _ in range(int(len(current_population) * 0.7)):
                 x = current_population[random.randint(0, int(len(current_population) / 2))]
                 y = current_population[random.randint(0, int(len(current_population) / 2))]
                 child = self.crossover_1(x, y)
 
                 if random.uniform(0, 1) < 0.2:
-                    child = self.mutation(child)
-                child.calculate_initial_coverage()
+                    child = self.mutation_move(child)
+                else:
+                    child.covered_cells = 0
+                    child.calculate_initial_coverage()
                 new_population.append(child)
-
+            for i in range(len(current_population) - int(len(current_population) * 0.7)):
+                new_population.append(current_population[i])
             current_population = new_population
             current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
             current_iterations += 1
@@ -343,6 +346,44 @@ class Problem:
     def mutation(self, solution: Solution):
         self.solution = solution
         return next(self.neighbours())[0]
+
+    def mutation_move(self, solution: Solution):
+        solution.covered_cells = 0
+        solution.calculate_initial_coverage()
+        #alternative mutation function
+        solutions = [Solution(None, solution), Solution(None, solution),
+        Solution(None, solution), Solution(None, solution),
+        Solution(None, solution), Solution(None, solution),
+        Solution(None, solution), Solution(None, solution),
+        Solution(None, solution), Solution(None, solution)]
+        
+        #Indexes of the random routers that can be removed
+
+
+        for sol in solutions:
+            sol.routers.append(sol.routers.pop(random.randrange(len(sol.routers))))
+            sol.covered_cells = 0
+            sol.calculate_initial_coverage()
+        
+        max_covered_cells = solution.covered_cells
+        index = -1
+
+        for i in range(len(solutions)):
+            if (solutions[i].covered_cells > max_covered_cells):
+                print("new: ", solutions[i].covered_cells)
+                print("old: ", solution.covered_cells)
+                max_covered_cells = solutions[i].covered_cells
+                index = i
+        #Should always happen
+        if index != -1:
+            print("Mutated into a solution with more covered cells")
+            print(solutions[i].covered_cells)
+            print(solution.covered_cells)
+            return solutions[i]
+        print("Didn't mutate")
+        print(solutions[i].covered_cells)
+        return solution
+        
 
     def generate_initial_solution(self, size):
         return [Solution(self) for _ in range(size)]
