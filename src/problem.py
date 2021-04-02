@@ -2,6 +2,7 @@ import random
 import numpy as np
 import math
 from time import sleep
+import matplotlib.pyplot as plt
 
 from grid import *
 from solution import *
@@ -150,36 +151,43 @@ class Problem:
         Simulated Annealing optimization technique.
         """
 
+        temperatures = []
+        scores = []
+
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         best_solution = self.solution
         best_score = current_score
 
-        T0 = 100000
+        T0 = 100
         t = T0
-        iterations_per_temperature = 3
+        iterations_per_temperature = 10
         neighbours = self.neighbours()
         currentIteration = 1
 
-        while t > 10:
+        while t > 1:
+            temperatures.append(t)
+            scores.append(current_score)
             print(f"Current temperature: {t}")
 
+            # for _ in range(max(1, int(math.log(currentIteration)))):
             for _ in range(iterations_per_temperature):
                 neighbour, args = next(neighbours, (None, None))
                 # print("args: ", args)
                 if neighbour == None:
-                    break
+                    return best_solution
 
                 
-                neighbour.calculate_coverage(args)
+                neighbour.update_coverage
                 neighbour_score = neighbour.evaluate()
                 if neighbour_score != -1:
-                    delta = current_score - neighbour_score
+                    # delta = current_score - neighbour_score
+                    delta = neighbour_score - current_score
 
                     if delta >= 0:
                         self.solution = neighbour
                         current_score = neighbour_score
-                        if neighbour_score > best_score:
+                        if current_score > best_score:
                             best_solution = self.solution
                             best_score = current_score 
                         neighbours = self.neighbours()
@@ -189,7 +197,7 @@ class Problem:
                         if math.exp(delta / t) > random.uniform(0, 1):
                             self.solution = neighbour
                             current_score = neighbour_score
-                            if neighbour_score > best_score:
+                            if current_score > best_score:
                                 best_solution = self.solution
                                 best_score = current_score
                             neighbours = self.neighbours()
@@ -205,6 +213,16 @@ class Problem:
             currentIteration += 1
             print(f"Current temperature: {t}")
 
+        plt.xlabel('Iteration')
+        plt.ylabel('Temperature')
+
+        plt.plot(range(len(temperatures)), temperatures)
+
+        ax2=plt.twinx()
+        # make a plot with different y-axis using second axis object
+        ax2.set_ylabel("Score")
+        ax2.plot(range(len(scores)), scores, color="orange")
+        plt.show()
 
         return best_solution
 
@@ -213,8 +231,10 @@ class Problem:
         Genetic algorithm optimization technique.
         """
 
+        scores = []
+
         current_iterations = 0
-        current_population = self.generate_initial_solution(50)
+        current_population = self.generate_initial_solution(25)
         max_iterations = 50
 
         while current_iterations < max_iterations:
@@ -227,16 +247,22 @@ class Problem:
                 child = self.crossover_1(x, y)
 
                 if random.uniform(0, 1) < 0.2:
-                    child = self.mutation_move(child)
-                else:
-                    child.covered_cells = 0
-                    child.calculate_initial_coverage()
+                    child = self.mutation(child)
+                child.covered_cells = 0
+                child.calculate_coverage()
                 new_population.append(child)
             for i in range(len(current_population) - int(len(current_population) * 0.7)):
                 new_population.append(current_population[i])
             current_population = new_population
             current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
+            scores.append(current_population[0].evaluate())
             current_iterations += 1
+
+        plt.xlabel('Iteration')
+        plt.ylabel('Score')
+
+        plt.plot(range(len(scores)), scores)
+        plt.show()
 
         return max(current_population, key=lambda elem: elem.evaluate())
 
