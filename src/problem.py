@@ -95,12 +95,14 @@ class Problem:
         """
         Hill-climbing optimization technique.
         """
-        
+        scores = []
+
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         i = 0
 
-        while i < 50:
+        while i < 200:
+            scores.append(current_score)
             for neighbour, args in self.neighbours():
                 neighbour.update_coverage(args)
                 neighbour.calculate_graph()
@@ -110,7 +112,7 @@ class Problem:
                 if neighbour_score > current_score:
                     self.solution = neighbour
                     current_score = neighbour_score
-
+                    
                     print(f"Current score: {current_score}")
                     i += 1
 
@@ -118,6 +120,12 @@ class Problem:
 
             else:
                 return self.solution
+
+        plt.xlabel('Iteration')
+        plt.ylabel('Score')
+
+        plt.plot(range(len(scores)), scores)
+        plt.show()
 
         return self.solution
 
@@ -203,7 +211,7 @@ class Problem:
                             neighbours = self.neighbours()
 
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
+            t = T0 * 0.97 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
@@ -234,8 +242,8 @@ class Problem:
         scores = []
 
         current_iterations = 0
-        current_population = self.generate_initial_solution(25)
-        max_iterations = 50
+        current_population = self.generate_initial_solution(8)
+        max_iterations = 20
 
         while current_iterations < max_iterations:
             new_population = []
@@ -244,7 +252,7 @@ class Problem:
             for _ in range(int(len(current_population) * 0.7)):
                 x = current_population[random.randint(0, int(len(current_population) / 2))]
                 y = current_population[random.randint(0, int(len(current_population) / 2))]
-                child = self.crossover_1(x, y)
+                child = self.crossover_2(x, y, 6, 8)
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
@@ -357,7 +365,7 @@ class Problem:
             else:
                 i -= 1
         
-        y_cuts = np.sort(y_cuts)
+        y_cuts = sorted(y_cuts)
         y_cuts.append(max_y_pos + 1)
 
         
@@ -380,7 +388,7 @@ class Problem:
 
         cutoff = 0
 
-        if (random.choice(True, False)):
+        if (random.choice((True, False))):
             cutoff = parent1.cutoff
 
         else:
