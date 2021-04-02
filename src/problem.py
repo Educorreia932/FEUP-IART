@@ -159,13 +159,13 @@ class Problem:
         best_solution = self.solution
         best_score = current_score
 
-        T0 = 10000
+        T0 = 100
         t = T0
-        iterations_per_temperature = 3
+        iterations_per_temperature = 10
         neighbours = self.neighbours()
         currentIteration = 1
 
-        while t > 10:
+        while t > 1:
             temperatures.append(t)
             scores.append(current_score)
             print(f"Current temperature: {t}")
@@ -187,7 +187,7 @@ class Problem:
                     if delta >= 0:
                         self.solution = neighbour
                         current_score = neighbour_score
-                        if neighbour_score > best_score:
+                        if current_score > best_score:
                             best_solution = self.solution
                             best_score = current_score 
                         neighbours = self.neighbours()
@@ -197,24 +197,22 @@ class Problem:
                         if math.exp(delta / t) > random.uniform(0, 1):
                             self.solution = neighbour
                             current_score = neighbour_score
-                            if neighbour_score > best_score:
+                            if current_score > best_score:
                                 best_solution = self.solution
                                 best_score = current_score
                             neighbours = self.neighbours()
 
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            # t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
+            t = T0 * 0.95 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
 
-            beta = (1 / (self.R * 1000))
-            t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
+            # beta = (1 / (self.R * 1000))
+            # t = t / (1 + beta * t)                                            # Taken from https://link.springer.com/referenceworkentry/10.1007%2F978-3-540-92910-9_49
             currentIteration += 1
             print(f"Current temperature: {t}")
 
-
-        print(scores)
         plt.xlabel('Iteration')
         plt.ylabel('Temperature')
 
@@ -233,6 +231,8 @@ class Problem:
         Genetic algorithm optimization technique.
         """
 
+        scores = []
+
         current_iterations = 0
         current_population = self.generate_initial_solution(8)
         max_iterations = 20
@@ -248,12 +248,19 @@ class Problem:
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
-                child.calculate_initial_coverage()
+                child.calculate_coverage()
                 new_population.append(child)
 
             current_population = new_population
             current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
+            scores.append(current_population[-1].evaluate())
             current_iterations += 1
+
+        plt.xlabel('Iteration')
+        plt.ylabel('Score')
+
+        plt.plot(range(len(scores)), scores)
+        plt.show()
 
         return max(current_population, key=lambda elem: elem.evaluate())
 
