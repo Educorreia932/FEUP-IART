@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from grid import *
 from solution import *
 
+"""
+Possible directions in which a router may move when performing a moving operation
+"""
 possible_directions = [
     (-1, 0),     # N
     (-1, 1),     # NE
@@ -20,17 +23,19 @@ possible_directions = [
 
 
 class Problem:
-    """Class to represent the problem information and solve it using different types of algorithms"""
+    """
+    Class to represent the problem information and solve it using different types of algorithms
+    """
 
     def __init__(self, H, W, R, Pb, Pr, B, b, grid) -> None:
-        self.H = H            # Number of rows of the grid
-        self.W = W            # Number of columns of the grid
-        self.R = R            # Radius of a router range
-        self.Pb = Pb          # Price of connecting one cell to the backbone
-        self.Pr = Pr          # Price of one wireless router
-        self.B = B            # Maximum budget
-        self.b = b            # Backboard coordinates
-        self.grid = grid      # Building's grid cells
+        self.H = H                 # Number of rows of the grid
+        self.W = W                 # Number of columns of the grid
+        self.R = R                 # Radius of a router range
+        self.Pb = Pb               # Price of connecting one cell to the backbone
+        self.Pr = Pr               # Price of one wireless router
+        self.B = B                 # Maximum budget
+        self.b = b                 # Backboard coordinates
+        self.grid = grid           # Building's grid cells
         self.grid.problem = self
         self.solution = None
 
@@ -56,6 +61,7 @@ class Problem:
             return [None] * 2
 
         # Check if position is valid (not wall and not void)
+        # If it is, move the router in the given direction until it reaches an empty space
         while self.grid.cells[new_coords[0], new_coords[1]] in (CELL_TYPE["#"], CELL_TYPE["-"]):
             new_coords = (
                 new_coords[0] + direction[0],
@@ -95,14 +101,16 @@ class Problem:
         """
         Hill-climbing optimization technique.
         """
+
         scores = []
 
         self.solution = Solution(self)
         current_score = self.solution.evaluate()
         i = 0
 
-        while i < 200:
+        while i < 50:
             scores.append(current_score)
+            
             for neighbour, args in self.neighbours():
                 neighbour.update_coverage(args)
                 neighbour.calculate_graph()
@@ -332,7 +340,8 @@ class Problem:
 
     def crossover_2(self, parent1: Solution, parent2: Solution, min_y_cuts: int, max_y_cuts: int):
         """
-        Same as crossover 1, but instead of splitting the parts of the map with routers once, we split it a random number between min_y_cuts and max_y_cuts times
+        Same as crossover 1, but, instead of splitting the parts of the map with routers once,
+        We split it a random number between min_y_cuts and max_y_cuts times
         """
         
         # Get the y bounds of the router lists in which there are routers in either list
@@ -406,16 +415,15 @@ class Problem:
     def mutation_move(self, solution: Solution):
         solution.covered_cells = 0
         solution.calculate_initial_coverage()
-        #alternative mutation function
+
+        # Alternative mutation function
         solutions = [Solution(None, solution), Solution(None, solution),
         Solution(None, solution), Solution(None, solution),
         Solution(None, solution), Solution(None, solution),
         Solution(None, solution), Solution(None, solution),
         Solution(None, solution), Solution(None, solution)]
         
-        #Indexes of the random routers that can be removed
-
-
+        # Indexes of the random routers that can be removed
         for sol in solutions:
             sol.routers.append(sol.routers.pop(random.randrange(len(sol.routers))))
             sol.covered_cells = 0
@@ -430,16 +438,18 @@ class Problem:
                 print("old: ", solution.covered_cells)
                 max_covered_cells = solutions[i].covered_cells
                 index = i
-        #Should always happen
+
+        # Should always happen
         if index != -1:
             print("Mutated into a solution with more covered cells")
             print(solutions[i].covered_cells)
             print(solution.covered_cells)
             return solutions[i]
+
         print("Didn't mutate")
         print(solutions[i].covered_cells)
-        return solution
         
+        return solution
 
     def generate_initial_solution(self, size):
         return [Solution(self) for _ in range(size)]

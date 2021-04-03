@@ -10,7 +10,6 @@ if __name__ == "__main__":
     start: float = time.time()
 
     solution: Solution = selected_algorithm(problem)
-    print(len(solution.get_placed_routers()))
 
     end: float = time.time()
 

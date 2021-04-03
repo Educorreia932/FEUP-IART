@@ -1,6 +1,12 @@
 class Graph:
+    """
+    Class to represent a graph, in which the nodes are routers of our problem and the edges are cable.
+    """
+
     def __init__(self, vertices=None, parent_graph=None) -> None:
         if parent_graph == None:
+            # Create a new graph
+            
             self.vertices = list(vertices)
             self.V = len(vertices)
             self.edges = []
@@ -18,18 +24,28 @@ class Graph:
             self.children_amount = [0] * len(vertices)
 
         else:
+            # Copy a previous graph information
+
             self.vertices = parent_graph.vertices.copy()
             self.V = parent_graph.V
             self.edges = parent_graph.edges.copy()
             self.children_amount = parent_graph.children_amount.copy()
 
     def find(self, parent, i):
+        """
+        Find a node in the tree
+        """
+
         if parent[i] == i:
             return i
 
         return self.find(parent, parent[i])
 
     def apply_union(self, parent, rank, x, y):
+        """
+        Performs the union of two trees.
+        """
+
         xroot = self.find(parent, x)
         yroot = self.find(parent, y)
 
@@ -44,6 +60,11 @@ class Graph:
             rank[xroot] += 1
 
     def kruskal(self):
+        """
+        Implementation of Kruskal's algorithm to calculate the MST
+        Connecting all nodes (routers) with the minimum weight (amount of cable used) possibly.
+        """
+
         self.edges = sorted(self.edges, key=lambda edge: edge[2])
         i, e = 0, 0
         self.result = []
@@ -70,6 +91,7 @@ class Graph:
     def get_mst_distance(self) -> int:
         """
         Get the MST total weight, that is, the sum of each edge's weight.
+        Which, in turn, corresponds to the amount of cable being used to connect all routers.
         """
 
         total_weight = 0
@@ -138,7 +160,6 @@ class Graph:
 
         self.V -= 1
         self.children_amount = [0] * self.V
-
 
     @staticmethod
     def weight(u, v):

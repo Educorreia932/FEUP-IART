@@ -5,12 +5,19 @@ from graph import *
 
 
 class Solution:
+    """
+    Class to represent a problem's solution.
+    """
+
     def __init__(self, problem, parent_solution=None) -> None:
         if parent_solution == None:
+            # Create a new solution
+
             self.routers = []
             self.problem = problem
 
             # Generate initial solution
+            
             print("Generating initial solution...")
 
             for _ in range(problem.B // problem.Pr):
@@ -29,20 +36,16 @@ class Solution:
             # Number of covered cells by wireless
             self.covered_cells = 0
 
-            self.calculate_coverage()
-            self.calculate_graph()
+            self.calculate_coverage()   # Calculate initial coverage
+            self.calculate_graph()      # Calculate initial graph connecting all routers
 
-            score = self.evaluate()
-
-            while score < 0:
-                removed_router = self.routers[self.cutoff - 1]
-                self.cutoff -= 1
-                self.update_coverage_after_operation(removed_router, -1)
-                score = self.evaluate()
+            self.evaluate()             # Calculate initial score
 
             print("Finished generating")
 
         else:
+            # Copy a previous solution information
+
             self.routers = parent_solution.routers.copy()
             self.problem = parent_solution.problem
             self.cutoff = parent_solution.cutoff
@@ -86,8 +89,6 @@ class Solution:
 
             remaining_budget = (B - (N * Pb + M * Pr))
 
-        # print(f"Placed routers {M} | Remaining budget {remaining_budget}")
-
         return 1000 * t + remaining_budget
 
     def calculate_mst(self) -> None:
@@ -115,6 +116,11 @@ class Solution:
         self.graph.removed_router(router)
 
     def calculate_coverage(self) -> None:
+        """
+        Calculate coverage of the cells from the beginning.
+        This must only be necessary when creating an initial/new solution.
+        """
+
         H = self.problem.H
         W = self.problem.W
 
@@ -127,6 +133,7 @@ class Solution:
     def update_coverage(self, coordinates) -> None:
         """
         Calculate the coverage of the cells after performing moving a router.
+        This is faster than having to recalculate the whole coverage.
         """
 
         old_coords = coordinates[0]
@@ -162,7 +169,7 @@ class Solution:
 
     def reduce_cuttoff(self) -> None:
         """
-        Reduce the cutoff, effectively removing the last router from the solution
+        Reduce the cutoff, effectively removing the last router from the solution.
         """
 
         removed_router = self.routers[self.cutoff - 1]
@@ -173,7 +180,7 @@ class Solution:
 
     def increase_cuttoff(self) -> None:
         """
-        Increase the cutoff, effectively adding the last router to the solution
+        Increase the cutoff, effectively adding the last router to the solution.
         """
 
         added_router = self.routers[self.cutoff]

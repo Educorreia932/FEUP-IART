@@ -1,5 +1,9 @@
 import numpy as np
 
+"""
+Possible cell types
+"""
+
 CELL_TYPE = {
     "-": -1,  # Void cell
     "#": 0,   # Wall cell
@@ -11,9 +15,12 @@ CELL_TYPE = {
 
 
 class Grid:
+    """
+    Class to represent the problem's building grid as a NumPy array.
+    """
+
     def __init__(self, cells: np.array) -> None:
         self.cells = cells
-        # print("Target amount:", len(np.argwhere(self.cells == CELL_TYPE["."])))
 
     def router_can_see(self, coordinates, target) -> bool:
         """

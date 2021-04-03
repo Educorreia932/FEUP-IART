@@ -1,4 +1,4 @@
-# Reads the output of python -m cProfile -o stats .\solution.py
+# Reads the output profiling stats binary file and presents it in a human readable manner
 
 import pstats
 

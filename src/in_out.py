@@ -88,16 +88,18 @@ def plot(solution: Solution) -> None:
 def backbone(solution: Solution) -> np.array:
     """
     Place cable and router cells in grid after solving the problem.
-    This is necessary to plotting the resulting building grid.
+    This is necessary to plot the resulting building grid.
     """
 
     g = solution.graph
     grid = solution.problem.grid
     grid.place_backbone(solution.problem.b)
 
+    # Place the router cells in the building grid
     for router in solution.get_placed_routers():
         grid.place_router(router)
 
+    # For each router in the resulting MST plot its wireless range
     for router in g.result:
         start = g.vertices[router[0]]
         target = g.vertices[router[1]]
