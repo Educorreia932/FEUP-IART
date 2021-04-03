@@ -180,13 +180,13 @@ class Problem:
         best_solution = self.solution
         best_score = current_score
 
-        T0 = 100
+        T0 = 10000
         t = T0
         iterations_per_temperature = 10
         neighbours = self.neighbours()
         currentIteration = 1
 
-        while t > 1:
+        while t > 10:
             temperatures.append(t)
             scores.append(current_score)
             print(f"Current temperature: {t}")
@@ -199,7 +199,7 @@ class Problem:
                     return best_solution
 
                 
-                neighbour.update_coverage
+                neighbour.update_coverage(args)
                 neighbour_score = neighbour.evaluate()
                 if neighbour_score != -1:
                     # delta = current_score - neighbour_score
@@ -224,7 +224,7 @@ class Problem:
                             neighbours = self.neighbours()
 
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
-            t = T0 * 0.97 ** currentIteration                 # Exponential multiplicative cooling
+            t = T0 * 0.99 ** currentIteration                 # Exponential multiplicative cooling
             # t = T0 / (1 + 100 * math.log(1 + currentIteration))  # Logarithmical multiplicative cooling
             # t = T0 / (1 + 10 * currentIteration)             # Linear multiplicative cooling 
             # t = T0 / (1 + 0.1 * currentIteration ** 2)        # Quadratic multiplicative cooling
