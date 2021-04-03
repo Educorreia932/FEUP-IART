@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from functools import partial
 from problem import *
 from grid import *
 
@@ -21,7 +22,8 @@ def user_input() -> tuple:
         Problem.hill_climbing,
         Problem.hill_climbing_steepest_ascent,
         Problem.simulated_annealing,
-        Problem.genetic_algorithm
+        partial(Problem.genetic_algorithm, crossover=1),
+        partial(Problem.genetic_algorithm, crossover=2)
     ]
 
     print("Select the building:")
@@ -38,7 +40,8 @@ def user_input() -> tuple:
     print("[1] Hill Climbing")
     print("[2] Hill Climbing - Steepest Ascent")
     print("[3] Simmulated Annealing")
-    print("[4] Genetic Algorithm")
+    print("[4] Genetic Algorithm - Crossover 1")
+    print("[5] Genetic Algorithm - Crossover 2")
     print()
 
     selected_algorithm = int(input()) - 1

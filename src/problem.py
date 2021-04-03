@@ -247,7 +247,7 @@ class Problem:
 
         return best_solution
 
-    def genetic_algorithm(self):
+    def genetic_algorithm(self, crossover):
         """
         Genetic algorithm optimization technique.
         """
@@ -261,22 +261,32 @@ class Problem:
         while current_iterations < max_iterations:
             new_population = []
 
-
             for _ in range(int(len(current_population) * 0.7)):
                 x = current_population[random.randint(0, int(len(current_population) / 2))]
                 y = current_population[random.randint(0, int(len(current_population) / 2))]
-                child = self.crossover_2(x, y, 6, 8)
+
+                if crossover == 1:
+                    child = self.crossover_1(x, y)
+
+                elif crossover == 2:
+                    child = self.crossover_2(x, y, 6, 8)
 
                 if random.uniform(0, 1) < 0.2:
                     child = self.mutation(child)
+
                 child.covered_cells = 0
                 child.calculate_coverage()
                 new_population.append(child)
+
             for i in range(len(current_population) - int(len(current_population) * 0.7)):
                 new_population.append(current_population[i])
+
             current_population = new_population
             current_population.sort(reverse=True, key=lambda elem: elem.evaluate())
-            scores.append(current_population[0].evaluate())
+            current_score = current_population[0].evaluate()
+            scores.append(current_score)
+            print(f"Current score: {current_score}")
+
             current_iterations += 1
 
         plt.xlabel('Iteration')

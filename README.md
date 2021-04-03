@@ -43,6 +43,5 @@ Covered cells: 21511
 Placed routers: 284
 ```
 
-![](out/charleston_road.png)
-
+![](charleston_road.png)
 ![](label.png)
