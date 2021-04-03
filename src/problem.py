@@ -127,6 +127,11 @@ class Problem:
                     break
 
             else:
+                plt.xlabel('Iteration')
+                plt.ylabel('Score')
+
+                plt.plot(range(len(scores)), scores)
+                plt.show()
                 return self.solution
 
         plt.xlabel('Iteration')
@@ -250,8 +255,8 @@ class Problem:
         scores = []
 
         current_iterations = 0
-        current_population = self.generate_initial_solution(8)
-        max_iterations = 20
+        current_population = self.generate_initial_solution(15)
+        max_iterations = 50
 
         while current_iterations < max_iterations:
             new_population = []
