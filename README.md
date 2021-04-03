@@ -45,11 +45,4 @@ Placed routers: 284
 
 ![](out/charleston_road.png)
 
-- <span style="color: #fdeb4f">█</span> - Placed cable.
-- <span style="color: #a6de68">█</span> - Initial backbone.
-- <span style="color: #5dc592">█</span> - Placed router.
-- <span style="color: #4ca6a2">█</span> - Target covered by a router's wireless range.
-- <span style="color: #197370">█</span> - Target  not covered by a router's wireless range.
-- <span style="color: #265270">█</span> - Wall.
-- <span style="color: #362d68">█</span> - Void.
-
+![](label.png)
