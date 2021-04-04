@@ -1,56 +1,51 @@
 class Graph:
-    def __init__(self, new_vertices, parent_graph=None):
-        if parent_graph == None:
-            self.V = len(new_vertices)
-            self.vertices = list(new_vertices)
-            self.graph = []
+    """
+    Class to represent a graph, in which the nodes are routers of our problem and the edges are cable.
+    """
 
-            for i in range(self.V - 1):
-                for j in range(i + 1, self.V):
+    def __init__(self, vertices=None, parent_graph=None) -> None:
+        if parent_graph == None:
+            # Create a new graph
+            
+            self.vertices = list(vertices)
+            self.V = len(vertices)
+            self.edges = []
+
+            for i in range(len(vertices) - 1):
+                for j in range(i + 1, len(vertices)):
                     u = self.vertices[i]
                     v = self.vertices[j]
-
                     w = self.weight(u, v)
 
-                    self.graph.append([i, j, w])
+                    self.edges.append([i, j, w])
 
-            self.graph = sorted(self.graph, key=lambda item: item[2])
+            # Amount of connections each vertex has on the minimum spanning tree
+            # Used to place backbones on router with more than one connection
+            self.children_amount = [0] * len(vertices)
 
         else:
+            # Copy a previous graph information
+
             self.vertices = parent_graph.vertices.copy()
-            self.graph = parent_graph.graph.copy()
-
-            # Case for more than one new vertex
-            for i in range(len(new_vertices)):
-                for j in range(len(self.vertices)):
-                    u = new_vertices[i]
-                    v = self.vertices[j]
-
-                    w = self.weight(u, v)
-
-                    self.add_edge(parent_graph.V + i, j, w)
-
-            self.vertices.extend(new_vertices)
-            self.V = len(self.vertices)
-
-        #Amount of connections each vertex has on the mst
-        #Used to place backbones on router with more than one connection
-        self.childrenAmount = [0]*self.V
-
-    def add_edge(self, u, v, w):
-
-        i = binary_search(self.graph, w, 0, len(self.graph) - 1)
-        self.graph.insert(i, [u, v, w])
-
-    # Search function
+            self.V = parent_graph.V
+            self.edges = parent_graph.edges.copy()
+            self.children_amount = parent_graph.children_amount.copy()
 
     def find(self, parent, i):
+        """
+        Find a node in the tree
+        """
+
         if parent[i] == i:
             return i
 
         return self.find(parent, parent[i])
 
     def apply_union(self, parent, rank, x, y):
+        """
+        Performs the union of two trees.
+        """
+
         xroot = self.find(parent, x)
         yroot = self.find(parent, y)
 
@@ -64,13 +59,13 @@ class Graph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
-    def weight(_, u, v):
-        """Taken from https://en.wikipedia.org/wiki/Chebyshev_distance"""
-        return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1
-
-    #  Applying Kruskal algorithm
-
     def kruskal(self):
+        """
+        Implementation of Kruskal's algorithm to calculate the MST
+        Connecting all nodes (routers) with the minimum weight (amount of cable used) possibly.
+        """
+
+        self.edges = sorted(self.edges, key=lambda edge: edge[2])
         i, e = 0, 0
         self.result = []
         parent = []
@@ -81,7 +76,7 @@ class Graph:
             rank.append(0)
 
         while e < self.V - 1:
-            u, v, w = self.graph[i]
+            u, v, w = self.edges[i]
             i += 1
             x = self.find(parent, u)
             y = self.find(parent, v)
@@ -89,47 +84,87 @@ class Graph:
             if x != y:
                 e += 1
                 self.result.append([u, v, w])
-                self.childrenAmount[u] += 1
-                self.childrenAmount[v] += 1
+                self.children_amount[u] += 1
+                self.children_amount[v] += 1
                 self.apply_union(parent, rank, x, y)
 
-    def get_mst_distance(self):
-        result = 0
+    def get_mst_distance(self) -> int:
+        """
+        Get the MST total weight, that is, the sum of each edge's weight.
+        Which, in turn, corresponds to the amount of cable being used to connect all routers.
+        """
+
+        total_weight = 0
+
         for e in self.result:
-            result += e[2]
-            result += 1 if self.childrenAmount[e[0]] > 1 else 0
-            result += 1 if self.childrenAmount[e[1]] > 1 else 0
+            total_weight += e[2]
+            total_weight += 1 if self.children_amount[e[0]] > 1 else 0
+            total_weight += 1 if self.children_amount[e[1]] > 1 else 0
 
             # Reset number of connections so that we dont put extra backbones
-            self.childrenAmount[e[0]] = 0
-            self.childrenAmount[e[1]] = 0
+            self.children_amount[e[0]] = 0
+            self.children_amount[e[1]] = 0
 
-        return result - 1  # -1 because of the initial backbone
-        # return sum([e[2] for e in self.result])
+        return total_weight - 1  # -1 because of the initial backbone
 
+    def moved_router(self, before, after):
+        """
+        Update graph information after moving a router.
+        """
 
-def binary_search(arr, val, start, end):
-    # We need to distinguish whether we should insert before or after the left boundary.
-    # Imagine [0] is the last step of the binary search and we need to decide where to insert -1
-    if start == end:
-        if arr[start][2] > val:
-            return start
+        self.removed_router(before)
+        self.added_router(after)
 
-        else:
-            return start+1
+    def added_router(self, router):
+        """
+        Update graph information after adding a router.
+        """
 
-    # This occurs if we are moving beyond left's boundary
-    # Meaning the left boundary is the least  position to find a number greater than val
-    if start > end:
-        return start
+        self.vertices.append(router)
 
-    mid = (start + end) // 2
+        for i in range(self.V):
+            v = self.vertices[i]
+            w = self.weight(router, v)
+            self.edges.append([self.V, i, w])
 
-    if arr[mid][2] < val:
-        return binary_search(arr, val, mid+1, end)
+        self.V += 1
+        self.children_amount = [0] * self.V
 
-    elif arr[mid][2] > val:
-        return binary_search(arr, val, start, mid-1)
+    def removed_router(self, router):
+        """
+        Update graph information after removing a router.
+        """
 
-    else:
-        return mid
+        print(f"Before: {self.edges}")
+
+        router_index = self.vertices.index(router)
+        self.vertices.pop(router_index)
+
+        E = len(self.edges)  # Total number of edges
+        i = 0
+
+        while i < E:
+            if router_index in (self.edges[i][0], self.edges[i][1]):
+                self.edges.pop(i)
+                E -= 1
+
+            else:
+                i += 1
+
+        for i in range(len(self.edges)):
+            if self.edges[i][0] > router_index:
+                self.edges[i][0] -= 1
+
+            if self.edges[i][1] > router_index:
+                self.edges[i][1] -= 1
+
+        self.V -= 1
+        self.children_amount = [0] * self.V
+
+    @staticmethod
+    def weight(u, v):
+        """
+        Calculates the Chebyshev distance between two points
+        """
+
+        return max((abs(v[0] - u[0]), abs(v[1] - u[1]))) - 1

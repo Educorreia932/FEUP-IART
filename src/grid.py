@@ -1,50 +1,107 @@
 import numpy as np
 
-cells = {
-    "BACKBONE": -2,
-    "VOID": -1,
-    "WALL": 0,
-    "TARGET": 1,
-    "ROUTER": 2,
-    "CONNECTED_ROUTER": 3,
-    "CABLE": 4
+"""
+Possible cell types
+"""
+
+CELL_TYPE = {
+    "-": -1,  # Void cell
+    "#": 0,   # Wall cell
+    ".": 1,   # Target cell
+    "r": 2,   # Router cell
+    "b": 3,   # Backbone cell
+    "c": 4    # Cable cell
 }
 
+
 class Grid:
-    def __init__(self, H, W, cells):
-        self.H = H #Height
-        self.W = W #Width
+    """
+    Class to represent the problem's building grid as a NumPy array.
+    """
+
+    def __init__(self, cells: np.array) -> None:
         self.cells = cells
 
-        self.target_cells = set(tuple(coords) for coords in np.argwhere(self.cells == 1))
-        self.target_amount = len(self.target_cells)
+    def router_can_see(self, coordinates, target) -> bool:
+        """
+        Returns wheter a route can see a cell or not.
+        """
 
-    def get_cell(self, coords):
-        return self.cells[coords[0], coords[1]]
+        top = min(target[0], coordinates[0])
+        bottom = max(target[0], coordinates[0])
 
-    def get_target_amount(self):
-        return self.target_amount
+        left = min(target[1], coordinates[1])
+        right = max(target[1], coordinates[1])
 
-    def generate_neighbours(self, coords):
-        """Generates neighbours of coords"""
+        return np.all(self.cells[top:bottom + 1, left:right + 1] != CELL_TYPE["#"])
 
-        return [
-            (coords[0] + i, coords[1] + j) for i in [-1, 0, 1]
-            for j in [-1, 0, 1] if
-            0 <= i + coords[0] < self.H and
-            0 <= j + coords[1] < self.W and
-            i + coords[0] != j + coords[1] and
-            self.cells[i + coords[0]][j + coords[1]] != 0
-        ]
+    def router_coverage(self, coordinates) -> bool:
+        """
+        Returns the cells covered by a router's wireless range
+        """
 
-    def router_can_see(self, r_coords, target):
-        """Returns wheter a route can see a cell or not"""
+        radius = self.problem.R
+        H = self.problem.H
+        W = self.problem.W
 
-        top = min(target[0], r_coords[0])
-        bottom = max(target[0], r_coords[0])
+        covered_cells = []
 
-        left = min(target[1], r_coords[1])
-        right = max(target[1], r_coords[1])
+        # Y position of topmost tile checked for coverage
+        top = max(coordinates[0] - radius, 0)
 
-        return np.all(self.cells[top:bottom + 1, left:right + 1] != 0)
+        for i in range(coordinates[0], top - 1, -1):
+            if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
+                top = i
+                break
 
+        # Y position of bottommost tile checked for coverage
+        bottom = min(coordinates[0] + radius + 1, H)
+
+        for i in range(coordinates[0] + 1, bottom + 1):
+            if self.cells[i, coordinates[1]] == CELL_TYPE["#"]:
+                bottom = i
+                break
+
+        left = max(coordinates[1] - radius, 0)
+
+        for i in range(coordinates[1] - 1, left - 1, -1):
+            if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
+                left = i
+                break
+
+        right = min(coordinates[1] + radius + 1, W)
+
+        for i in range(coordinates[1] + 1, right + 1):
+            if self.cells[coordinates[0], i] == CELL_TYPE["#"]:
+                right = i
+                break
+
+        for i in range(top, bottom):
+            for j in range(left, right):
+                target = (i, j)
+
+                if self.cells[target] == CELL_TYPE["."] and self.router_can_see(coordinates, target):
+                    covered_cells.append(target)
+
+        return covered_cells
+
+    def place_router(self, coords):
+        """
+        Places a router cell.
+        """
+
+        self.cells[coords[0], coords[1]] = CELL_TYPE["r"]
+
+    def place_backbone(self, coords):
+        """
+        Places the initial backbone cell.
+        """
+
+        self.cells[coords[0], coords[1]] = CELL_TYPE["b"]
+
+    def place_cable(self, coords):
+        """
+        Places a cable cell.
+        """
+        
+        self.cells[coords[0], coords[1]] = CELL_TYPE["c"]
