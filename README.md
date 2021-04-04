@@ -1,6 +1,6 @@
 # Router Placement
 
-## Group 02
+## Group
 
 - Eduardo Correia - up201806433
 - João Cardoso - up201806531
