@@ -108,7 +108,7 @@ class Problem:
         current_score = self.solution.evaluate()
         i = 0
 
-        while i < 50:
+        while i < 10:
             scores.append(current_score)
             
             for neighbour, args in self.neighbours():
@@ -189,20 +189,17 @@ class Problem:
         while t > 10:
             temperatures.append(t)
             scores.append(current_score)
-            print(f"Current temperature: {t}")
+            print(f"Current temperature: {t} | Current score: {current_score}")
 
-            # for _ in range(max(1, int(math.log(currentIteration)))):
             for _ in range(iterations_per_temperature):
                 neighbour, args = next(neighbours, (None, None))
-                # print("args: ", args)
+
                 if neighbour == None:
                     return best_solution
-
                 
                 neighbour.update_coverage(args)
                 neighbour_score = neighbour.evaluate()
                 if neighbour_score != -1:
-                    # delta = current_score - neighbour_score
                     delta = neighbour_score - current_score
 
                     if delta >= 0:
@@ -218,9 +215,11 @@ class Problem:
                         if math.exp(delta / t) > random.uniform(0, 1):
                             self.solution = neighbour
                             current_score = neighbour_score
+
                             if current_score > best_score:
                                 best_solution = self.solution
                                 best_score = current_score
+
                             neighbours = self.neighbours()
 
             # Taken from http://what-when-how.com/artificial-intelligence/a-comparison-of-cooling-schedules-for-simulated-annealing-artificial-intelligence/
